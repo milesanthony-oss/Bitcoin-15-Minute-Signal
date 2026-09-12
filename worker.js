@@ -69,7 +69,7 @@ export default {
         }
       });
 
-    } catch (error) {
+          } catch (error) {
       return Response.json(
         {
           error: "kalshi_fetch_failed",
@@ -78,7 +78,7 @@ export default {
         {
           status: 502,
           headers: cors
-  
+        }
       );
     }
   }
