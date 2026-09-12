@@ -78,7 +78,8 @@ export default {
         {
           status: 502,
           headers: cors
-        }
-      );
   
-    
+      );
+    }
+  }
+};
