@@ -81,7 +81,15 @@ function nyParts(ms) {
 
 function tickerForBoundary(ms) {
   const p = nyParts(ms);
-  return `KXBTC15M-${p.yy}${p.mon}${p.dd}${p.hh}${p.mm}`;
+
+  const suffix =
+    p.mm === "00" ? "00" :
+    p.mm === "15" ? "15" :
+    p.mm === "30" ? "30" :
+    p.mm === "45" ? "45" :
+    p.mm;
+
+  return `KXBTC15M-${p.yy}${p.mon}${p.dd}${p.hh}${p.mm}-${suffix}`;
 }
 
 function inferredTickers(now = Date.now()) {
