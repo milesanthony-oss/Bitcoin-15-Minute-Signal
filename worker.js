@@ -80,6 +80,6 @@ export default {
           headers: cors
         }
       );
-    }
-  }
-};
+    
+}com
+    
