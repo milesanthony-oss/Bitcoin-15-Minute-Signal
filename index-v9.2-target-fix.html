@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080a0d">
+<title>BTC 15m Quant Signal V9.2</title>
+<style>
+:root{color-scheme:dark;--bg:#080a0d;--card:#15181d;--card2:#101318;--line:#303640;--muted:#9da4b1;--text:#f4f6f8;--blue:#5aa2ff;--green:#38e15d;--orange:#ff7138;--yellow:#eed36c;--red:#ff6870}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:860px;margin:auto;padding:18px 14px 52px}
+h1{font-size:40px;line-height:1.05;margin:5px 0 9px;font-weight:900}.v{color:var(--blue)}
+.sub{color:var(--muted);font-size:16px;line-height:1.45}
+.card{background:var(--card);border:1px solid var(--line);border-radius:23px;padding:18px;margin-top:14px}
+.card2{background:var(--card2);border:1px solid #252a32;border-radius:17px;padding:14px;margin-top:12px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;align-items:baseline}
+.k{color:var(--muted);font-size:17px}.val{font-size:21px;font-weight:780;text-align:right;max-width:52vw}.big{font-size:42px;font-weight:920}.mid{font-size:25px;font-weight:850}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:9px 12px;font-weight:760}
+.dot{width:9px;height:9px;border-radius:50%;background:#747981}.dot.live{background:#55df4e;box-shadow:0 0 9px #55df4e}
+.green{color:var(--green)}.orange{color:var(--orange)}.yellow{color:var(--yellow)}.red{color:var(--red)}.muted{color:var(--muted)}
+button,input{font:inherit}button{border:1px solid var(--line);background:#252a31;color:#fff;border-radius:13px;padding:11px 13px;font-weight:760}
+input{width:100%;background:#0d1014;color:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 14px;font-weight:760;font-size:19px}
+.notice{border-radius:15px;padding:12px 13px;margin-top:12px;line-height:1.4}.ok{border:1px solid #285e35;background:#13281a;color:#8cf49c}.warn{border:1px solid #6c5b22;background:#292516;color:#f1da72}.bad{border:1px solid #6c3036;background:#2a171b;color:#ff9ca2}
+.signal{font-size:45px;font-weight:950;text-align:center;padding:24px 10px;border-radius:21px;background:#2a2e34;margin-top:16px;letter-spacing:.3px}
+.signal.up{background:#17471e;color:#78ff8c}.signal.down{background:#572710;color:#ffad81}
+.qscore{font-size:32px;font-weight:900}.bar{height:10px;border-radius:999px;background:#252a31;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,#ff6870,#eed36c,#38e15d)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.small{font-size:13px}.tiny{font-size:12px}
+details{margin-top:12px}summary{cursor:pointer;font-weight:750}.tag{padding:5px 8px;border:1px solid var(--line);border-radius:9px;font-size:12px;color:var(--muted)}
+@media(max-width:540px){.wrap{padding:14px 10px 40px}h1{font-size:35px}.big{font-size:36px}.k{font-size:15.5px}.val{font-size:19px}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>BTC 15m Quant Signal <span class="v">V9.2</span></h1>
+<div class="sub">Settlement-aware, multi-venue, microstructure-aware and self-calibrating. V9.2 keeps the model alive even when Kalshi is down: Robinhood target + cross-venue spot + Polymarket can run in degraded model-only mode, while Kalshi adds executable market pricing when available.</div>
+
+<div class="card">
+  <div class="row"><div class="mid">Feed matrix</div><button id="refresh">Reconnect all</button></div>
+  <div class="two" style="margin-top:12px">
+    <div class="pill"><span id="kdot" class="dot"></span><span id="kstat">Kalshi connecting…</span></div>
+    <div class="pill"><span id="cdot" class="dot"></span><span id="cstat">Coinbase connecting…</span></div>
+    <div class="pill"><span id="rdot" class="dot"></span><span id="rstat">Kraken connecting…</span></div>
+    <div class="pill"><span id="pdot" class="dot"></span><span id="pstat">Polymarket discovery…</span></div>
+  </div>
+  <hr>
+  <div class="grid">
+    <div class="k">Data quality</div><div class="val qscore" id="dq">0/100</div>
+    <div class="k">Operating mode</div><div class="val" id="mode">INITIALIZING</div>
+    <div class="k">Execution permission</div><div class="val" id="permission">PASS ONLY</div>
+  </div>
+  <div class="bar" style="margin-top:10px"><div id="dqbar" class="fill"></div></div>
+  <div id="feedmsg" class="notice warn">Initializing data feeds.</div>
+</div>
+
+<div class="card">
+  <div class="mid">Active 15-minute contract</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Kalshi contract</div><div class="val" id="ticker">—</div>
+    <div class="k">Kalshi target</div><div class="val" id="ktarget">—</div>
+    <div class="k">Active model target</div><div class="val" id="target">—</div>
+    <div class="k">Target source</div><div class="val" id="targetSrc">Kalshi</div>
+    <div class="k">Contract end</div><div class="val" id="end">—</div>
+    <div class="k">Countdown</div><div class="val big" id="count">—</div>
+  </div>
+  <div class="card2">
+    <div class="k">Optional Robinhood exact target</div>
+    <div class="row" style="margin-top:9px"><div style="flex:1;min-width:190px"><input id="rhTarget" inputmode="decimal" placeholder="e.g. 77303.32"></div><button id="clearTarget">Use Kalshi target</button></div>
+    <div class="muted small" style="margin-top:8px">Any valid Robinhood target becomes active immediately. Clear or replace it when Robinhood rolls to a new contract.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="mid">Cross-venue spot proxy</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Coinbase BTC-USD</div><div class="val" id="cb">—</div>
+    <div class="k">Kraken BTC/USD</div><div class="val" id="kr">—</div>
+    <div class="k">Bitstamp BTC/USD</div><div class="val" id="bs">—</div>
+    <div class="k">Gemini BTC/USD</div><div class="val" id="gm">—</div>
+    <div class="k">Weighted robust spot proxy</div><div class="val big" id="proxy">—</div>
+    <div class="k">Cross-venue dispersion (MAD)</div><div class="val" id="disp">—</div>
+    <div class="k">Distance from target</div><div class="val" id="dist">—</div>
+    <div class="k">Proxy venues used</div><div class="val" id="venuesUsed">—</div>
+    <div class="k">15s / 30s / 60s momentum</div><div class="val" id="moms">—</div>
+    <div class="k">1s realized σ</div><div class="val" id="sigma">—</div>
+    <div class="k">Volatility regime</div><div class="val" id="volreg">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="mid">Settlement engine</div>
+  <div class="sub" style="margin-top:7px">The final value is modeled as a 60-second average, not a single terminal print. During the final minute the already-observed portion is locked into the math.</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Settlement phase</div><div class="val" id="phase">—</div>
+    <div class="k">Proxy observations in final 60s</div><div class="val" id="settN">0 / 60</div>
+    <div class="k">Observed final-minute avg</div><div class="val" id="settAvg">—</div>
+    <div class="k">Required avg for remaining seconds</div><div class="val" id="reqAvg">—</div>
+    <div class="k">Expected settlement average</div><div class="val" id="expAvg">—</div>
+    <div class="k">Settlement uncertainty σ</div><div class="val" id="settSD">—</div>
+    <div class="k">Basis/venue uncertainty add-on</div><div class="val" id="basisUnc">—</div>
+    <div class="k">Model-only directional lean</div><div class="val" id="lean">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="mid">Prediction-market microstructure</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Kalshi YES bid / ask</div><div class="val" id="kyes">—</div>
+    <div class="k">Kalshi NO bid / ask</div><div class="val" id="kno">—</div>
+    <div class="k">Kalshi normalized midpoint</div><div class="val" id="kprob">—</div>
+    <div class="k">Kalshi spread</div><div class="val" id="kspread">—</div>
+    <div class="k">Top-book depth imbalance</div><div class="val" id="imb">—</div>
+    <div class="k">Polymarket 15m UP probability</div><div class="val" id="poly">—</div>
+    <div class="k">External-market disagreement</div><div class="val" id="xdis">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="mid">Quant probability & execution filter</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Raw settlement model UP</div><div class="val" id="rawP">—</div>
+    <div class="k">Calibrated model UP</div><div class="val" id="calP">—</div>
+    <div class="k">Model DOWN</div><div class="val" id="downP">—</div>
+    <div class="k">Kalshi implied UP</div><div class="val" id="mkP">—</div>
+    <div class="k">Model vs Kalshi gap</div><div class="val" id="gap">—</div>
+    <div class="k">Required edge</div><div class="val" id="edgeReq">—</div>
+    <div class="k">UP edge after ask</div><div class="val" id="upEdge">—</div>
+    <div class="k">DOWN edge after ask</div><div class="val" id="dnEdge">—</div>
+    <div class="k">30s probability stability</div><div class="val" id="stab">—</div>
+    <div class="k">Momentum-shock state</div><div class="val" id="shock">—</div>
+    <div class="k">Calibration sample size</div><div class="val" id="calN">0</div>
+    <div class="k">Historical Brier score</div><div class="val" id="brier">—</div>
+  </div>
+  <div id="signal" class="signal">PASS</div>
+  <div id="reason" class="muted" style="margin-top:12px">Collecting institutional-quality context.</div>
+</div>
+
+<div class="card">
+  <div class="row"><div class="mid">Shadow book / calibration</div><div class="tag">local device only</div></div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Logged model snapshots</div><div class="val" id="logN">0</div>
+    <div class="k">Resolved snapshots</div><div class="val" id="resN">0</div>
+    <div class="k">BUY snapshots</div><div class="val" id="buyN">0</div>
+    <div class="k">Resolved BUY hit rate</div><div class="val" id="hit">—</div>
+  </div>
+  <div class="row" style="margin-top:14px"><button id="exportCsv">Export calibration CSV</button><button id="clearLogs">Clear local logs</button></div>
+  <details><summary>What gets logged?</summary><div class="muted small" style="margin-top:8px;line-height:1.45">At most once every 10 seconds: contract, time remaining, target source, proxy price, raw/calibrated probability, market odds, edges, signal, data-quality score, volatility and dispersion. After a Kalshi contract reports a result, matching snapshots are automatically labeled for Brier score and hit-rate analysis.</div></details>
+</div>
+
+<div class="card">
+  <div class="mid">Model discipline</div>
+  <div class="muted" style="line-height:1.55;margin-top:9px">
+    V9 never converts an external market quote into the model probability used to claim edge. Spot/settlement math produces the probability; Kalshi/Polymarket are cross-checks and execution filters. Missing feeds increase uncertainty or force PASS. When Kalshi is unavailable, the settlement model still runs from the Robinhood target and robust cross-venue spot proxy, but execution remains PASS because no live Kalshi quote exists. The direct CF Benchmarks BRTI feed is not embedded because it requires authenticated/licensed access.
+  </div>
+</div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const N=x=>{const v=parseFloat(x);return Number.isFinite(v)?v:null};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const money=x=>x==null?'—':'$'+x.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=x=>x==null?'—':(x*100).toFixed(1)+'%';
+const cents=x=>x==null?'—':(x*100).toFixed(1)+'¢';
+const signedMoney=x=>x==null?'—':(x>=0?'+':'-')+'$'+Math.abs(x).toFixed(2);
+const median=a=>{const b=a.filter(Number.isFinite).sort((x,y)=>x-y);if(!b.length)return null;const m=Math.floor(b.length/2);return b.length%2?b[m]:(b[m-1]+b[m])/2};
+const mean=a=>{const b=a.filter(Number.isFinite);return b.length?b.reduce((s,x)=>s+x,0)/b.length:null};
+const stdev=a=>{const b=a.filter(Number.isFinite);if(b.length<2)return null;const m=mean(b);return Math.sqrt(b.reduce((s,x)=>s+(x-m)**2,0)/(b.length-1))};
+function normcdf(x){const t=1/(1+.2316419*Math.abs(x)),d=.3989423*Math.exp(-x*x/2);let p=1-d*t*(.319381530+t*(-.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));return x>=0?p:1-p}
+
+const S={
+ market:null, marketTs:0, orderbook:null, orderTs:0, lastTicker:null,
+ px:{coinbase:null,kraken:null,bitstamp:null,gemini:null},
+ pxTs:{coinbase:0,kraken:0,bitstamp:0,gemini:0},
+ cbBid:null,cbAsk:null, krBid:null,krAsk:null,
+ cbws:null,krws:null,
+ sec:[], settle:[], pHist:[],
+ poly:null,polyTs:0,polySlug:null,
+ targetOverride:null,overrideTicker:null,
+ candidate:null,candidateTs:0,shockDir:null,shockTs:0,
+ lastLog:0, logs:[],
+ resolveQueue:{}, activeSlot:null
+};
+const C={baseEdge:.055,minQuality:68,hardGap:.22,polyVeto:.27,unstable:.16,hold:8,noEntry:25,shockWindow:180,shockHold:20,maxLogs:5000};
+
+try{S.logs=JSON.parse(localStorage.getItem('v9ShadowLogs')||'[]');if(!Array.isArray(S.logs))S.logs=[]}catch(e){S.logs=[]}
+try{
+  const z=JSON.parse(localStorage.getItem('v9Target')||'null');
+  if(z&&N(z.v)>1000){S.targetOverride=N(z.v);S.overrideTicker=z.slot||z.ticker||null;$('rhTarget').value=S.targetOverride}
+}catch(e){}
+
+function marketTarget(m){
+ for(const k of ['floor_strike','cap_strike','functional_strike']){const x=N(m?.[k]);if(x!=null&&x>1000)return x}
+ const txt=[m?.title,m?.subtitle,m?.yes_sub_title,m?.rules_primary].filter(Boolean).join(' ');
+ const z=txt.match(/\$?([0-9]{2,3},?[0-9]{3}(?:\.[0-9]+)?)/);return z?N(z[1].replace(',','')):null;
+}
+function slotKey(ts=Date.now()){
+  return String(Math.floor(ts/900000));
+}
+function inferredEndDate(ts=Date.now()){
+  return new Date((Math.floor(ts/900000)+1)*900000);
+}
+function endDate(m){
+  const x=m?.close_time||m?.latest_expiration_time;
+  const d=x?new Date(x):null;
+  return d&&!isNaN(d)?d:inferredEndDate();
+}
+function currentContractId(){
+  return S.market?.ticker||('RH15M-'+slotKey());
+}
+function inferredContractLabel(){
+  const end=inferredEndDate(), start=new Date(end.getTime()-15*60*1000);
+  const fmt=d=>d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  return `${fmt(start)}–${fmt(end)}`;
+}
+function activeTarget(){
+  if(S.targetOverride!=null) return S.targetOverride;
+  return marketTarget(S.market);
+}
+function left(){
+  const d=endDate(S.market);
+  return d?Math.max(0,(d-Date.now())/1000):null
+}
+function askYes(){let x=N(S.market?.yes_ask_dollars);if(x==null){const nb=N(S.market?.no_bid_dollars);if(nb!=null)x=1-nb}return x}
+function askNo(){let x=N(S.market?.no_ask_dollars);if(x==null){const yb=N(S.market?.yes_bid_dollars);if(yb!=null)x=1-yb}return x}
+function bidYes(){return N(S.market?.yes_bid_dollars)}
+function bidNo(){return N(S.market?.no_bid_dollars)}
+function normalizedMarketP(){const yb=bidYes(),ya=askYes();if(yb!=null&&ya!=null)return (yb+ya)/2;const ya2=askYes(),na=askNo();return ya2!=null&&na!=null?ya2/(ya2+na):null}
+function pickMarket(arr){
+ const now=Date.now();
+ return (arr||[]).filter(m=>m&&['open','active'].includes(String(m.status).toLowerCase()))
+ .map(m=>({m,e:endDate(m),t:marketTarget(m)}))
+ .filter(x=>x.e&&x.t&&x.e>now-5000&&x.e<now+16*60*1000)
+ .sort((a,b)=>a.e-b.e)[0]?.m||null;
+}
+async function jsonFetch(url,timeout=3500){
+ const ac=new AbortController(),to=setTimeout(()=>ac.abort(),timeout);
+ try{const r=await fetch(url,{cache:'no-store',signal:ac.signal});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(to)}
+}
+async function fetchKalshi(){
+ const bases=['https://external-api.kalshi.com/trade-api/v2','https://api.elections.kalshi.com/trade-api/v2'];
+ let m=null,err='';
+ for(const base of bases){try{const j=await jsonFetch(base+'/markets?series_ticker=KXBTC15M&status=open&limit=100');m=pickMarket(j.markets);if(m)break}catch(e){err=e.message}}
+ if(!m){$('kdot').className='dot';$('kstat').textContent='Kalshi unavailable';return}
+ if(S.market?.ticker&&S.market.ticker!==m.ticker){
+   S.lastTicker=S.market.ticker;
+   queueResolve(S.lastTicker);
+   S.settle=[];S.pHist=[];S.candidate=null;S.shockDir=null;
+ }
+ S.market=m;S.marketTs=Date.now();$('kdot').className='dot live';$('kstat').textContent='Kalshi live';
+ fetchOrderbook();
+}
+async function fetchOrderbook(){
+ if(!S.market?.ticker)return;
+ try{const j=await jsonFetch(`https://external-api.kalshi.com/trade-api/v2/markets/${encodeURIComponent(S.market.ticker)}/orderbook?depth=10`,2500);S.orderbook=j.orderbook||j;S.orderTs=Date.now()}catch(e){}
+}
+function orderImbalance(){
+ const ob=S.orderbook;if(!ob)return null;
+ const yes=ob.yes_dollars||ob.yes||[], no=ob.no_dollars||ob.no||[];
+ const sz=a=>a.slice(-5).reduce((s,r)=>s+(N(Array.isArray(r)?r[1]:r.quantity||r.count)||0),0);
+ const y=sz(yes),n=sz(no);return y+n>0?(y-n)/(y+n):null;
+}
+function kalshiSpread(){const b=bidYes(),a=askYes();return b!=null&&a!=null?a-b:null}
+
+function connectCoinbase(){
+ try{S.cbws?.close()}catch(e){}
+ const w=new WebSocket('wss://advanced-trade-ws.coinbase.com');S.cbws=w;
+ w.onopen=()=>{w.send(JSON.stringify({type:'subscribe',channel:'ticker',product_ids:['BTC-USD']}));w.send(JSON.stringify({type:'subscribe',channel:'heartbeats',product_ids:['BTC-USD']}));$('cdot').className='dot live';$('cstat').textContent='Coinbase live'};
+ w.onmessage=e=>{try{const j=JSON.parse(e.data);for(const ev of j.events||[])for(const t of ev.tickers||[]){const p=N(t.price);if(p){S.px.coinbase=p;S.pxTs.coinbase=Date.now()}const b=N(t.best_bid),a=N(t.best_ask);if(b)S.cbBid=b;if(a)S.cbAsk=a}}catch(_){}};
+ w.onclose=()=>{$('cdot').className='dot';$('cstat').textContent='Coinbase reconnecting';setTimeout(connectCoinbase,1800)};
+}
+function connectKraken(){
+ try{S.krws?.close()}catch(e){}
+ const w=new WebSocket('wss://ws.kraken.com/v2');S.krws=w;
+ w.onopen=()=>{w.send(JSON.stringify({method:'subscribe',params:{channel:'ticker',symbol:['BTC/USD'],snapshot:true}}));$('rdot').className='dot live';$('rstat').textContent='Kraken live'};
+ w.onmessage=e=>{try{const j=JSON.parse(e.data);if(j.channel==='ticker'&&j.data?.[0]){const t=j.data[0],p=N(t.last);if(p){S.px.kraken=p;S.pxTs.kraken=Date.now()}const b=N(t.bid),a=N(t.ask);if(b)S.krBid=b;if(a)S.krAsk=a}}catch(_){}};
+ w.onclose=()=>{$('rdot').className='dot';$('rstat').textContent='Kraken reconnecting';setTimeout(connectKraken,2200)};
+}
+async function pollRestSpots(){
+ try{const j=await jsonFetch('https://www.bitstamp.net/api/v2/ticker/btcusd/',2500);const p=N(j.last);if(p){S.px.bitstamp=p;S.pxTs.bitstamp=Date.now()}}catch(e){}
+ try{const j=await jsonFetch('https://api.gemini.com/v1/pubticker/btcusd',2500);const p=N(j.last);if(p){S.px.gemini=p;S.pxTs.gemini=Date.now()}}catch(e){}
+}
+const BASE_W={coinbase:.34,kraken:.30,bitstamp:.21,gemini:.15};
+function freshVenueRows(){
+  const now=Date.now(),rows=[];
+  for(const k of Object.keys(S.px)){
+    if(S.px[k]!=null && now-S.pxTs[k]<10000){
+      const age=(now-S.pxTs[k])/1000;
+      rows.push({k,p:S.px[k],age,w:(BASE_W[k]||.1)*Math.exp(-age/12)});
+    }
+  }
+  return rows;
+}
+function freshPrices(){return freshVenueRows().map(x=>x.p)}
+function robustVenueSet(){
+  const rows=freshVenueRows(); if(!rows.length)return [];
+  const med=median(rows.map(x=>x.p));
+  const mad=median(rows.map(x=>Math.abs(x.p-med)))||0;
+  const cutoff=Math.max(8,3*mad);
+  let kept=rows.filter(x=>Math.abs(x.p-med)<=cutoff);
+  if(kept.length<2 && rows.length>=2) kept=rows.sort((a,b)=>Math.abs(a.p-med)-Math.abs(b.p-med)).slice(0,2);
+  return kept;
+}
+function proxy(){
+  const rows=robustVenueSet(); if(!rows.length)return null;
+  const sw=rows.reduce((s,x)=>s+x.w,0);
+  return sw>0?rows.reduce((s,x)=>s+x.p*x.w,0)/sw:median(rows.map(x=>x.p));
+}
+function dispersion(){
+  const rows=robustVenueSet(),m=median(rows.map(x=>x.p));if(rows.length<2||m==null)return null;
+  return median(rows.map(x=>Math.abs(x.p-m)));
+}
+function sampleSecond(){
+ const sk=slotKey();
+ if(S.activeSlot!==sk){
+   S.activeSlot=sk;S.settle=[];S.pHist=[];S.candidate=null;S.shockDir=null;
+   // Preserve a valid Robinhood override across slot metadata changes.
+   // The user can replace or clear it explicitly; the model should never ignore a visible target field.
+ }
+ const p=proxy();if(p==null)return;
+ const sec=Math.floor(Date.now()/1000),last=S.sec.at(-1);
+ if(!last||last.sec!==sec)S.sec.push({sec,p});else last.p=p;
+ while(S.sec.length&&S.sec[0].sec<sec-1200)S.sec.shift();
+ const e=endDate(S.market);if(e&&Date.now()>=e.getTime()-60000&&Date.now()<e.getTime()){
+   const sl=S.settle.at(-1);if(!sl||sl.sec!==sec)S.settle.push({sec,p});else sl.p=p;
+   if(S.settle.length>60)S.settle.shift();
+ }
+}
+function ago(sec){const q=Math.floor(Date.now()/1000)-sec;let z=null;for(const x of S.sec){if(x.sec<=q)z=x;else break}return z?.p??null}
+function mom(sec){const a=ago(sec),p=proxy();return a==null||p==null?null:p-a}
+function realizedSigma(win=120){
+ const q=Math.floor(Date.now()/1000)-win,a=S.sec.filter(x=>x.sec>=q);if(a.length<10)return null;const d=[];for(let i=1;i<a.length;i++)d.push(a[i].p-a[i-1].p);return stdev(d)
+}
+function volRegime(){
+ const s15=realizedSigma(20),s120=realizedSigma(120);if(s15==null||s120==null)return 'building';
+ const r=s15/Math.max(.2,s120);return r>1.8?'shock':r>1.25?'expanding':r<.7?'quiet':'normal';
+}
+function driftPerSec(){
+ const s=Math.max(.4,realizedSigma(120)||1.5);
+ let d=.45*(mom(15)||0)/15+.35*(mom(30)||0)/30+.20*(mom(60)||0)/60;
+ return clamp(d,-.22*s,.22*s);
+}
+function settlementModel(){
+ const t=activeTarget(),p=proxy(),l=left();if(t==null||p==null||l==null)return null;
+ const s=Math.max(.4,realizedSigma(120)||1.5),dr=driftPerSec(),disp=dispersion()||0;
+ const venueN=robustVenueSet().length;
+ const basisUnc=Math.max(1.25,disp*1.55,(venueN<2?6:0),(venueN===2?2.5:0));
+ let exp,sd,phase,req=null,obsAvg=null;
+ if(l>60){
+   const h=l-60;
+   exp=p+dr*(h+30);
+   const processVar=s*s*(h+20);
+   sd=Math.sqrt(processVar+basisUnc*basisUnc);
+   phase='pre-settlement';
+ }else{
+   const obs=S.settle.map(x=>x.p),n=obs.length,r=Math.max(0,60-n),sum=obs.reduce((a,b)=>a+b,0);
+   obsAvg=n?sum/n:null;
+   if(r>0)req=(t*60-sum)/r;
+   const futureSumMean=r*p+dr*r*(r+1)/2;
+   exp=(sum+futureSumMean)/60;
+   const processVar=(s*s*Math.pow(r,3)/3)/(60*60);
+   const basisVar=Math.pow(basisUnc*(r/60),2);
+   sd=Math.sqrt(Math.max(.25,processVar+basisVar));
+   phase='FINAL 60s averaging';
+ }
+ let raw=normcdf((exp-t)/Math.max(.5,sd));
+ raw=clamp(raw,.015,.985);
+ return {raw,exp,sd,basisUnc,phase,req,obsAvg,n:S.settle.length};
+}
+function calibrationStats(){
+ const r=S.logs.filter(x=>x.outcome===0||x.outcome===1);
+ if(!r.length)return {n:0,brier:null,slope:1};
+ const b=mean(r.map(x=>(x.p-x.outcome)**2));
+ // Conservative calibration: if realized Brier is poor, shrink logit toward 50%.
+ const baseline=.25,skill=clamp((baseline-b)/.15,0,1);
+ return {n:r.length,brier:b,slope:.55+.45*skill};
+}
+function calibrate(p){
+ const c=calibrationStats();if(p==null)return null;
+ const logit=Math.log(clamp(p,.01,.99)/(1-clamp(p,.01,.99)));
+ return 1/(1+Math.exp(-logit*c.slope));
+}
+function pRange(){
+ const now=Date.now();while(S.pHist.length&&S.pHist[0].t<now-30000)S.pHist.shift();
+ if(!S.pHist.length)return 0;const a=S.pHist.map(x=>x.p);return Math.max(...a)-Math.min(...a)
+}
+function shockState(dist,l){
+ const a=mom(15),b=mom(30),c=mom(60),s=Math.max(1,realizedSigma(60)||1.5);
+ let dir=null;if(l!=null&&l<=C.shockWindow&&a!=null&&b!=null){
+   const score=.5*a+.3*b+.2*(c||0),thr=Math.max(9,s*.65*Math.sqrt(60));
+   if(score>thr&&a>0&&b>0&&dist>=0)dir='UP';
+   if(score<-thr&&a<0&&b<0&&dist<=0)dir='DOWN';
+ }
+ if(dir){S.shockDir=dir;S.shockTs=Date.now()}
+ else if(S.shockTs&&Date.now()-S.shockTs>C.shockHold*1000){S.shockDir=null;S.shockTs=0}
+ return S.shockDir;
+}
+
+function currentPolySlug(){
+ const start=Math.floor(Date.now()/900000)*900;
+ return `btc-updown-15m-${start}`;
+}
+async function fetchPoly(){
+ const slug=currentPolySlug();const urls=[`https://gamma-api.polymarket.com/events/slug/${slug}`,`https://gamma-api.polymarket.com/markets?slug=${slug}`];
+ for(const u of urls)try{
+   const j=await jsonFetch(u,3000);
+   let m=null;
+   if(Array.isArray(j))m=j[0];else if(j?.markets)m=j.markets[0];else m=j;
+   if(m){
+     let outs=m.outcomes,prices=m.outcomePrices;
+     if(typeof outs==='string')try{outs=JSON.parse(outs)}catch(e){}
+     if(typeof prices==='string')try{prices=JSON.parse(prices)}catch(e){}
+     if(Array.isArray(outs)&&Array.isArray(prices)){
+       const i=outs.findIndex(x=>/up|yes/i.test(String(x)));const p=N(prices[i>=0?i:0]);
+       if(p!=null){S.poly=p;S.polyTs=Date.now();S.polySlug=slug;$('pdot').className='dot live';$('pstat').textContent='Polymarket live';return}
+     }
+   }
+ }catch(e){}
+ $('pdot').className='dot';$('pstat').textContent='Polymarket unavailable';
+}
+function quality(sm){
+ let q=0;
+ const kal=Date.now()-S.marketTs<7000;
+ if(kal)q+=22;
+ const fp=robustVenueSet().length;q+=Math.min(36,fp*12);
+ if(S.sec.length>=45)q+=14;else q+=14*S.sec.length/45;
+ const d=dispersion();if(d!=null)q+=d<3?10:d<7?8:d<15?4:0;
+ if(S.targetOverride!=null)q+=10;else if(marketTarget(S.market)!=null)q+=6;
+ if(Date.now()-S.orderTs<10000)q+=4;
+ if(Date.now()-S.polyTs<10000)q+=5;
+ if(sm&&sm.basisUnc<8)q+=3;
+ return Math.round(clamp(q,0,100));
+}
+function requiredEdge(q,l,spread,sm){
+ let e=C.baseEdge;
+ e+=(100-q)/100*.045;
+ e+=Math.min(.035,(spread||0)*.45);
+ if(volRegime()==='shock')e+=.025;else if(volRegime()==='expanding')e+=.012;
+ if(l<180)e+=.008;if(l<90)e+=.008;if(l<60)e+=.010;
+ if(sm)e+=Math.min(.02,sm.basisUnc/500);
+ return clamp(e,.05,.16);
+}
+function externalDisagreement(kp){
+ if(kp==null||S.poly==null||Date.now()-S.polyTs>10000)return null;
+ return Math.abs(kp-S.poly);
+}
+function render(){
+ sampleSecond();
+ const m=S.market,t=activeTarget(),kt=marketTarget(m),e=endDate(m),l=left(),p=proxy(),sm=settlementModel();
+ const raw=sm?.raw??null,cal=calibrate(raw);
+ if(cal!=null){S.pHist.push({t:Date.now(),p:cal});if(S.pHist.length>500)S.pHist.shift()}
+ const kp=normalizedMarketP(),spr=kalshiSpread(),imb=orderImbalance(),q=quality(sm),req=requiredEdge(q,l??999,spr,sm);
+ const ya=askYes(),na=askNo(),ue=cal!=null&&ya!=null?cal-ya:null,de=cal!=null&&na!=null?(1-cal)-na:null;
+ const gap=cal!=null&&kp!=null?cal-kp:null,xdis=externalDisagreement(kp),dist=p!=null&&t!=null?p-t:null,pr=pRange(),sh=shockState(dist,l);
+
+ $('ticker').textContent=m?.ticker||inferredContractLabel();$('ktarget').textContent=money(kt);$('target').textContent=money(t);
+ $('targetSrc').textContent=(S.targetOverride!=null)?'Robinhood override':(kt!=null?'Kalshi':'Unavailable');
+ $('end').textContent=e?e.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'—';
+ $('count').textContent=l==null?'—':String(Math.floor(l/60)).padStart(2,'0')+':'+String(Math.floor(l%60)).padStart(2,'0');
+ $('cb').textContent=money(S.px.coinbase);$('kr').textContent=money(S.px.kraken);$('bs').textContent=money(S.px.bitstamp);$('gm').textContent=money(S.px.gemini);$('proxy').textContent=money(p);
+ $('disp').textContent=dispersion()==null?'—':'$'+dispersion().toFixed(2);$('venuesUsed').textContent=robustVenueSet().map(x=>x.k).join(', ')||'—';$('dist').textContent=signedMoney(dist);$('dist').className='val '+(dist>0?'green':dist<0?'orange':'');
+ const fm=x=>x==null?'—':(x>=0?'+':'')+'$'+x.toFixed(2);
+ $('moms').textContent=[mom(15),mom(30),mom(60)].map(fm).join(' / ');
+ $('sigma').textContent=realizedSigma(120)==null?'—':'$'+realizedSigma(120).toFixed(2)+'/s';$('volreg').textContent=volRegime();
+
+ $('phase').textContent=sm?.phase||'—';$('settN').textContent=(sm?.n??0)+' / 60';$('settAvg').textContent=money(sm?.obsAvg);$('reqAvg').textContent=money(sm?.req);$('expAvg').textContent=money(sm?.exp);$('settSD').textContent=sm?'$'+sm.sd.toFixed(2):'—';$('basisUnc').textContent=sm?'$'+sm.basisUnc.toFixed(2):'—';$('lean').textContent=cal==null?'—':(cal>0.58?'UP '+pct(cal):cal<0.42?'DOWN '+pct(1-cal):'NEUTRAL '+pct(cal));
+
+ const yb=bidYes(),nb=bidNo();$('kyes').textContent=(yb!=null?cents(yb):'—')+' / '+(ya!=null?cents(ya):'—');$('kno').textContent=(nb!=null?cents(nb):'—')+' / '+(na!=null?cents(na):'—');
+ $('kprob').textContent=pct(kp);$('kspread').textContent=spr==null?'—':cents(spr);$('imb').textContent=imb==null?'—':(imb>=0?'+':'')+(imb*100).toFixed(0)+'% YES';
+ $('poly').textContent=(Date.now()-S.polyTs<10000)?pct(S.poly):'—';$('xdis').textContent=xdis==null?'—':(xdis*100).toFixed(1)+' pts';
+
+ $('rawP').textContent=pct(raw);$('calP').textContent=pct(cal);$('downP').textContent=cal==null?'—':pct(1-cal);$('mkP').textContent=pct(kp);$('gap').textContent=gap==null?'—':(gap>=0?'+':'')+(gap*100).toFixed(1)+' pts';$('edgeReq').textContent=pct(req);
+ $('upEdge').textContent=pct(ue);$('dnEdge').textContent=pct(de);$('upEdge').className='val '+(ue>0?'green':'orange');$('dnEdge').className='val '+(de>0?'green':'orange');
+ $('stab').textContent=(pr*100).toFixed(1)+' pts';$('shock').textContent=sh||'none';
+ const cs=calibrationStats();$('calN').textContent=cs.n;$('brier').textContent=cs.brier==null?'—':cs.brier.toFixed(3);
+
+ $('dq').textContent=q+'/100';$('dqbar').style.width=q+'%';
+ const kalFresh=Date.now()-S.marketTs<7000, spots=robustVenueSet().length;
+ const hasTarget=t!=null, hasModel=hasTarget&&cal!=null&&l!=null&&l>=0&&l<=905;
+ const hasExec=kalFresh&&ya!=null&&na!=null;
+ const mode=hasExec&&hasModel?'FULL':hasModel?'DEGRADED MODEL':'PASS ONLY';
+ $('mode').textContent=mode;$('mode').className='val '+(mode==='FULL'?'green':mode==='DEGRADED MODEL'?'yellow':'red');
+ $('permission').textContent=(hasExec&&q>=C.minQuality)?'ELIGIBLE':'PASS ONLY';$('permission').className='val '+((hasExec&&q>=80)?'green':(hasExec&&q>=C.minQuality)?'yellow':'red');
+ $('feedmsg').className='notice '+(mode==='FULL'?'ok':mode==='DEGRADED MODEL'?'warn':'bad');
+ $('feedmsg').textContent=mode==='FULL'?`Full mode: Kalshi + ${spots} robust spot venue(s).`:mode==='DEGRADED MODEL'?`Degraded model mode: ${spots} robust spot venue(s) + ${Date.now()-S.polyTs<10000?'Polymarket':'no Polymarket'}; no Kalshi execution quotes.`:`PASS only: target/model inputs incomplete.`;
+
+ let sig='PASS',cls='',reason='No qualifying edge.';
+ const valid=hasExec&&hasModel;
+ if(!hasModel)reason='PASS: a valid target plus model data are required.';
+ else if(!hasExec)reason='PASS: model is active, but Kalshi execution quotes are unavailable.';
+ else if(q<C.minQuality)reason=`PASS: data quality ${q}/100 is below ${C.minQuality}.`;
+ else if(S.sec.length<45)reason='PASS: building 1-second history.';
+ else if(l<=C.noEntry)reason=`PASS: final ${C.noEntry}s entry lock.`;
+ else if(Math.abs(gap)>=C.hardGap)reason=`PASS: model/Kalshi disagreement ${(Math.abs(gap)*100).toFixed(1)} pts exceeds hard limit.`;
+ else if(xdis!=null&&xdis>=C.polyVeto)reason=`PASS: Kalshi/Polymarket disagreement ${(xdis*100).toFixed(1)} pts is abnormal.`;
+ else if(pr>=C.unstable)reason=`PASS: model moved ${(pr*100).toFixed(1)} pts in 30s.`;
+ else{
+   let cand=null;if(ue>=req&&ue>de)cand='UP';if(de>=req&&de>ue)cand='DOWN';
+   if(sh==='UP'&&cand==='DOWN'){cand=null;reason='PASS: upward momentum-shock veto blocks contrarian DOWN.'}
+   else if(sh==='DOWN'&&cand==='UP'){cand=null;reason='PASS: downward momentum-shock veto blocks contrarian UP.'}
+   if(cand){
+     if(S.candidate!==cand){S.candidate=cand;S.candidateTs=Date.now();reason=`PASS: ${cand} candidate entered confirmation.`}
+     else{
+       const h=(Date.now()-S.candidateTs)/1000;
+       if(h<C.hold)reason=`PASS: ${cand} confirming ${h.toFixed(1)}s / ${C.hold}s.`;
+       else{sig='BUY '+cand;cls=cand==='UP'?'up':'down';reason=`${sig}: confirmed edge ${((cand==='UP'?ue:de)*100).toFixed(1)}% vs required ${(req*100).toFixed(1)}%.`}
+     }
+   }else{S.candidate=null;S.candidateTs=0}
+ }
+ $('signal').textContent=sig;$('signal').className='signal '+cls;$('reason').textContent=reason;
+ maybeLog({m,t,l,p,raw,cal,kp,ya,na,ue,de,q,req,sig,sm});
+ updateLogStats();
+}
+
+function maybeLog(z){
+ if(z.cal==null||z.t==null||Date.now()-S.lastLog<10000)return;
+ S.lastLog=Date.now();
+ const id=z.m?.ticker||currentContractId();
+ S.logs.push({ts:Date.now(),ticker:id,left:+z.l.toFixed(1),target:z.t,targetSource:(S.targetOverride!=null)?'Robinhood':(z.m?.ticker?'Kalshi':'Manual'),proxy:z.p,p:z.cal,raw:z.raw,marketP:z.kp,yesAsk:z.ya,noAsk:z.na,upEdge:z.ue,downEdge:z.de,quality:z.q,requiredEdge:z.req,signal:z.sig,volRegime:volRegime(),dispersion:dispersion(),settlementPhase:z.sm?.phase||'',outcome:null});
+ if(S.logs.length>C.maxLogs)S.logs=S.logs.slice(-C.maxLogs);
+ localStorage.setItem('v9ShadowLogs',JSON.stringify(S.logs));
+}
+function updateLogStats(){
+ const r=S.logs.filter(x=>x.outcome===0||x.outcome===1),b=r.filter(x=>/^BUY/.test(x.signal)),hits=b.filter(x=>(x.signal==='BUY UP'&&x.outcome===1)||(x.signal==='BUY DOWN'&&x.outcome===0)).length;
+ $('logN').textContent=S.logs.length;$('resN').textContent=r.length;$('buyN').textContent=S.logs.filter(x=>/^BUY/.test(x.signal)).length;$('hit').textContent=b.length?pct(hits/b.length):'—';
+}
+function queueResolve(ticker){
+ if(!ticker||S.resolveQueue[ticker])return;S.resolveQueue[ticker]=0;
+ const go=async()=>{
+   S.resolveQueue[ticker]++;
+   let m=null;
+   for(const u of [`https://external-api.kalshi.com/trade-api/v2/markets/${ticker}`,`https://external-api.kalshi.com/trade-api/v2/historical/markets/${ticker}`])try{const j=await jsonFetch(u,3000);m=j.market;if(m)break}catch(e){}
+   const res=String(m?.result||'').toLowerCase();
+   if(res==='yes'||res==='no'){
+     const out=res==='yes'?1:0;let changed=false;for(const x of S.logs)if(x.ticker===ticker&&x.outcome==null){x.outcome=out;changed=true}
+     if(changed)localStorage.setItem('v9ShadowLogs',JSON.stringify(S.logs));delete S.resolveQueue[ticker];updateLogStats();return;
+   }
+   if(S.resolveQueue[ticker]<40)setTimeout(go,30000);else delete S.resolveQueue[ticker];
+ };setTimeout(go,45000);
+}
+$('rhTarget').addEventListener('change',()=>{
+ const v=N($('rhTarget').value);
+ if(v!=null&&v>1000){S.targetOverride=v;S.overrideTicker=slotKey();localStorage.setItem('v9Target',JSON.stringify({v,slot:S.overrideTicker}))}
+ else{S.targetOverride=null;S.overrideTicker=null;localStorage.removeItem('v9Target')}
+ S.pHist=[];S.candidate=null;render();
+});
+$('clearTarget').onclick=()=>{$('rhTarget').value='';S.targetOverride=null;S.overrideTicker=null;localStorage.removeItem('v9Target');S.pHist=[];S.candidate=null;render()};
+$('refresh').onclick=()=>{fetchKalshi();fetchPoly();pollRestSpots();connectCoinbase();connectKraken()};
+$('exportCsv').onclick=()=>{
+ const cols=['ts','ticker','left','target','targetSource','proxy','p','raw','marketP','yesAsk','noAsk','upEdge','downEdge','quality','requiredEdge','signal','volRegime','dispersion','settlementPhase','outcome'];
+ const esc=v=>`"${String(v??'').replaceAll('"','""')}"`;const csv=[cols.join(','),...S.logs.map(r=>cols.map(c=>esc(r[c])).join(','))].join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='btc15m-v9-calibration.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+$('clearLogs').onclick=()=>{if(confirm('Clear all local V9 calibration logs?')){S.logs=[];localStorage.removeItem('v9ShadowLogs');updateLogStats()}};
+
+connectCoinbase();connectKraken();fetchKalshi();fetchPoly();pollRestSpots();updateLogStats();
+setInterval(render,250);
+setInterval(fetchKalshi,2500);
+setInterval(fetchOrderbook,2500);
+setInterval(fetchPoly,5000);
+setInterval(pollRestSpots,3000);
+})();
+</script>
+</body>
+</html>
