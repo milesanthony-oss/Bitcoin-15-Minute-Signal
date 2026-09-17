@@ -1,0 +1,1771 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080a0d">
+<title>BTC 15m Signal V13.7 — Model Research</title>
+<style>
+:root{color-scheme:dark;--bg:#080a0d;--card:#15181d;--card2:#101318;--line:#303640;--muted:#9da4b1;--text:#f4f6f8;--blue:#5aa2ff;--green:#38e15d;--orange:#ff7138;--yellow:#eed36c;--red:#ff6870}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:860px;margin:auto;padding:18px 14px 52px}
+h1{font-size:40px;line-height:1.05;margin:5px 0 9px;font-weight:900}.v{color:var(--blue)}
+.sub{color:var(--muted);font-size:16px;line-height:1.45}
+.card{background:var(--card);border:1px solid var(--line);border-radius:23px;padding:18px;margin-top:14px}
+.card2{background:var(--card2);border:1px solid #252a32;border-radius:17px;padding:14px;margin-top:12px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 16px;align-items:baseline}
+.k{color:var(--muted);font-size:17px}.val{font-size:21px;font-weight:780;text-align:right;max-width:52vw}.big{font-size:42px;font-weight:920}.mid{font-size:25px;font-weight:850}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:9px 12px;font-weight:760}
+.dot{width:9px;height:9px;border-radius:50%;background:#747981}.dot.live{background:#55df4e;box-shadow:0 0 9px #55df4e}
+.green{color:var(--green)}.orange{color:var(--orange)}.yellow{color:var(--yellow)}.red{color:var(--red)}.muted{color:var(--muted)}
+button,input{font:inherit}button{border:1px solid var(--line);background:#252a31;color:#fff;border-radius:13px;padding:11px 13px;font-weight:760}
+input{width:100%;background:#0d1014;color:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 14px;font-weight:760;font-size:19px}
+.notice{border-radius:15px;padding:12px 13px;margin-top:12px;line-height:1.4}.ok{border:1px solid #285e35;background:#13281a;color:#8cf49c}.warn{border:1px solid #6c5b22;background:#292516;color:#f1da72}.bad{border:1px solid #6c3036;background:#2a171b;color:#ff9ca2}
+.signal{font-size:45px;font-weight:950;text-align:center;padding:24px 10px;border-radius:21px;background:#2a2e34;margin-top:16px;letter-spacing:.3px}
+.signal.up{background:#17471e;color:#78ff8c}.signal.down{background:#572710;color:#ffad81}
+.qscore{font-size:32px;font-weight:900}.bar{height:10px;border-radius:999px;background:#252a31;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,#ff6870,#eed36c,#38e15d)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.small{font-size:13px}.tiny{font-size:12px}.miniInput{font-size:16px;padding:10px 11px}.metricbox{background:#0d1014;border:1px solid var(--line);border-radius:13px;padding:10px 12px}.metricbox .n{font-size:22px;font-weight:850;margin-top:3px}.diag{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;word-break:break-word}
+details{margin-top:12px}summary{cursor:pointer;font-weight:750}.tag{padding:5px 8px;border:1px solid var(--line);border-radius:9px;font-size:12px;color:var(--muted)}
+@media(max-width:540px){.wrap{padding:14px 10px 40px}h1{font-size:35px}.big{font-size:36px}.k{font-size:15.5px}.val{font-size:19px}.two,.three{grid-template-columns:1fr}}
+
+/* V10.5 simplified decision view */
+.decision-card{display:block!important;border:1px solid #3b4654;background:linear-gradient(180deg,#171b21,#111419)}
+.decision-hero{font-size:48px;font-weight:950;text-align:center;padding:25px 12px;border-radius:22px;background:#292e35;letter-spacing:.2px}
+.decision-hero.up{background:#155022;color:#7dff92}.decision-hero.down{background:#64270f;color:#ffb083}.decision-hero.watch{background:#3b3218;color:#ffe27a}
+.decision-sub{text-align:center;font-size:18px;font-weight:780;margin-top:10px;color:#c7cbd2}
+.decision-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.decision-metric{background:#0d1014;border:1px solid #2e343d;border-radius:15px;padding:12px}.decision-metric .label{color:var(--muted);font-size:13px}.decision-metric .num{font-size:24px;font-weight:900;margin-top:4px}
+.support-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #292f37}.support-row:first-child{border-top:0}.support-row b{text-align:right}
+.advanced-toggle{width:100%;margin-top:14px}.wrap.simple>.card:not(.decision-card){display:none}.wrap.simple .sub-main{display:block}
+.auto-ok{color:#76f08b}.auto-warn{color:#f1da72}
+@media(max-width:540px){.decision-hero{font-size:40px}.decision-grid{grid-template-columns:1fr 1fr}.decision-metric .num{font-size:21px}}
+
+/* V11.5 manual Robinhood execution UX */
+.match-line{display:flex;justify-content:center;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.match-badge{font-size:13px;font-weight:900;border-radius:999px;padding:7px 11px;border:1px solid #3b4654;background:#101318}.match-badge.ok{color:#79f58e;border-color:#2d6b3a;background:#112919}.match-badge.bad{color:#ff9ca2;border-color:#74343a;background:#2a171b}.match-badge.warn{color:#f1da72;border-color:#726120;background:#292516}
+.bet-guide{margin-top:14px;border:1px solid #35516f;background:#101820;border-radius:18px;padding:14px;text-align:center}.bet-guide.enter{border-color:#2c713d;background:#112519}.bet-guide.watch{border-color:#776323;background:#292516}.bet-guide.block{border-color:#76353b;background:#2a171b}.bet-guide .eyebrow{font-size:12px;color:var(--muted);font-weight:850;letter-spacing:.8px;text-transform:uppercase}.bet-guide .maxpay{font-size:30px;font-weight:950;margin-top:4px}.bet-guide .hint{font-size:14px;color:#c8ccd3;margin-top:5px;line-height:1.35}.late-pill{display:inline-block;margin-top:9px;padding:6px 10px;border-radius:999px;background:#3a2315;color:#ffb07f;border:1px solid #6e3c20;font-size:12px;font-weight:900}.late-pill.hidden{display:none}
+.decision-card .support-row:nth-child(n+5){opacity:.88}
+@media(max-width:540px){.bet-guide .maxpay{font-size:26px}.match-badge{font-size:12px}}
+
+/* V11.5 mobile quick execution */
+.quick-exec{
+  position:sticky;
+  top:max(8px,env(safe-area-inset-top));
+  z-index:20;
+  margin-top:12px;
+  padding:12px;
+  border:1px solid #435064;
+  border-radius:18px;
+  background:rgba(16,19,24,.96);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  box-shadow:0 10px 30px rgba(0,0,0,.28)
+}
+.quick-exec-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}
+.quick-exec-title b{font-size:15px}
+.quick-exec-title span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:850}
+.quick-exec-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:9px}
+.quick-field label{display:block;color:var(--muted);font-size:11px;font-weight:800;margin:0 0 5px 2px}
+.quick-field input{font-size:18px;padding:10px 11px;border-radius:11px}
+.quick-confirm{display:flex;align-items:flex-start;gap:9px;margin-top:9px;font-size:12px;line-height:1.35;color:#d7dbe1}
+.quick-confirm input{width:auto;min-width:18px;height:18px;margin-top:1px}
+.quick-actions{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:9px}
+.quick-actions button{padding:10px 11px;border-radius:11px;font-size:13px}
+.quick-side{font-weight:900}
+.quick-status{margin-top:8px;font-size:11px;color:var(--muted);line-height:1.35}
+@media(max-width:540px){
+  .decision-card{padding:12px}
+  .decision-hero{font-size:38px;padding:20px 8px}
+  .decision-sub{font-size:16px}
+  .quick-exec{margin-left:-1px;margin-right:-1px}
+  .quick-exec-grid{grid-template-columns:1.25fr .75fr}
+}
+
+
+/* V11.5 execution side lock */
+#execLockBanner.locked-up{border-color:#2c713d;background:#112519;color:#86f89a}
+#execLockBanner.locked-down{border-color:#7a3b23;background:#30190f;color:#ffb184}
+#execLockBanner.cancel{border-color:#8a343b;background:#32171b;color:#ff9ea5;font-weight:900}
+#rhExecPrice:disabled{opacity:.45;cursor:not-allowed}
+.quick-exec.side-up{box-shadow:0 0 0 1px rgba(56,225,93,.22),0 10px 30px rgba(0,0,0,.28)}
+.quick-exec.side-down{box-shadow:0 0 0 1px rgba(255,113,56,.25),0 10px 30px rgba(0,0,0,.28)}
+
+
+/* V12 actionable execution layer */
+.v12-action{margin:12px 0;padding:14px;border:1px solid #38404d;border-radius:14px;background:#11141a;text-align:center}
+.v12-action .state{font-size:30px;font-weight:950;letter-spacing:.3px}
+.v12-action .state.bet{color:#72f58b}.v12-action .state.pass{color:#ff8f98}.v12-action .state.watch{color:#ffd56b}
+.v12-action .line{margin-top:6px;color:#cbd1dc;font-size:13px;font-weight:750}
+.v12-action .numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.v12-action .numbers div{border:1px solid #303744;border-radius:10px;padding:8px 4px}
+.v12-action small{display:block;color:#8992a2;font-size:10px}.v12-action b{font-size:16px}
+@media(max-width:540px){.v12-action .numbers{grid-template-columns:repeat(3,1fr)}.v12-action .state{font-size:27px}}
+
+/* V12.2 always-visible startup diagnostics */
+.startup-diag{margin:12px 0;padding:12px;border:1px solid #435064;border-radius:14px;background:#0d1014}
+.startup-diag-title{font-weight:900;font-size:14px;margin-bottom:9px}
+.startup-diag-grid{display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:12px;align-items:center}
+.startup-diag-grid span:nth-child(odd){color:var(--muted)}
+.startup-diag-grid b{text-align:right;max-width:58vw;word-break:break-word}
+.status-good{color:var(--green)}.status-warn{color:var(--yellow)}.status-bad{color:var(--red)}
+
+</style>
+</head>
+<body>
+<div class="wrap" id="appWrap">
+<h1>BTC 15m Entry Signal <span class="v">V13.8</span></h1>
+<div class="sub sub-main">MODEL-FIRST RESEARCH • Live BTC setups, adaptive entry bands, and provisional flight logs. No verified Robinhood execution feed or proven trading edge. Hidden regime filter is experimental.</div>
+
+<div class="card" id="quantCard" style="border-color:#3c536b">
+ <div class="row"><div class="mid">MODEL-FIRST • RESEARCH</div><span class="tag" id="quantFeed">Connecting spot feeds</span></div>
+ <div id="quantHero" class="decision-hero" style="margin-top:12px">WAIT</div>
+ <div id="quantReason" class="decision-sub">Collecting BTC observations…</div><div id="quantRegime" class="small muted" style="text-align:center;margin-top:9px" aria-live="polite">Price-action engine warming up…</div>
+ <div class="decision-grid">
+  <div class="decision-metric"><div class="label">Directional probability*</div><div class="num" id="quantProbability">—</div></div>
+  <div class="decision-metric"><div class="label">Model max price*</div><div class="num" id="quantMax">—</div></div>
+  <div class="decision-metric"><div class="label">Time remaining</div><div class="num" id="quantTime">—</div></div>
+  <div class="decision-metric"><div class="label">Validation</div><div class="num" id="quantValidation" style="font-size:16px">Not established</div></div>
+ </div>
+ <div class="card2" id="chartCard" style="margin-top:14px;padding:12px">
+  <div class="row"><b>LIVE BTC • ENTRY / INVALIDATION</b><span class="tag" id="chartStatus">Building history</span></div>
+  <canvas id="quantChart" role="img" aria-label="Live BTC spot history with target and conditional invalidation level" style="display:block;width:100%;height:230px;margin-top:10px;border-radius:10px;background:#0b1016"></canvas>
+  <div class="decision-grid" style="margin-top:9px">
+   <div class="decision-metric"><div class="label">Dynamic contract entry band*</div><div class="num" id="chartEntry">—</div></div>
+   <div class="decision-metric"><div class="label">BTC breakdown threshold*</div><div class="num" id="chartExit">—</div></div>
+  </div>
+  <div id="chartChange" class="small muted" style="margin-top:9px">Entry-band movement: collecting baseline…</div><div id="chartOriginal" class="small muted" style="margin-top:5px">Initial setup: —</div><div id="chartExplanation" class="small muted" style="line-height:1.5;margin-top:10px">Waiting for sufficient BTC history. No live Robinhood exit quote is available.</div>
+ </div>
+ <div class="quick-exec" style="position:static"><div class="quick-exec-title"><b>Robinhood contract verification</b><span>manual • no API</span></div>
+ <div class="quick-exec-grid"><div class="quick-field"><label>Exact Robinhood target ($)</label><input id="quantTarget" inputmode="decimal" placeholder="Enter exact target"></div><div class="quick-field"><label>Current contract ask (¢)</label><input id="quantAsk" inputmode="decimal" placeholder="Optional"></div></div>
+ <label class="quick-confirm"><input type="checkbox" id="quantVerify"><span>I checked the exact Robinhood target and 15-minute expiry.</span></label>
+ <button id="quantApply" style="width:100%;margin-top:10px">Update contract and quote</button><div class="quick-status" id="quantQuote">No Robinhood execution price verified.</div></div>
+ <div class="notice warn" id="quantCaveat">*Experimental, unvalidated probability and price ceiling. No automated trading or executable quote.</div>
+ <button id="quantDetails" style="width:100%;margin-top:12px">Show diagnostics and export logs</button>
+ </div>
+ <div id="quantAdvanced" style="display:none">
+<div class="card decision-card">
+  <div id="actionHero" class="decision-hero">WAIT</div>
+  <div id="actionSub" class="decision-sub">Building live evidence…</div>
+  <div class="match-line">
+    <span id="contractMatch" class="match-badge warn">VERIFY EXTERNAL MARKET</span>
+    <span id="feedHealth" class="match-badge warn">ENTER ROBINHOOD PRICE</span>
+    <span id="lateMode" class="late-pill hidden">FINAL 60s MODE</span>
+  </div>
+  <div class="startup-diag" id="startupDiag">
+    <div class="startup-diag-title">LIVE CONNECTION STATUS</div>
+    <div class="startup-diag-grid">
+      <span>JavaScript engine</span><b id="diagJs" class="status-warn">STARTING…</b>
+      <span>Cloudflare Worker</span><b id="diagWorker" class="status-warn">CHECKING…</b>
+      <span>Kalshi / DepthFeed market</span><b id="diagMarket" class="status-warn">CHECKING…</b>
+      <span>BTC spot venues</span><b id="diagSpot" class="status-warn">CHECKING…</b>
+      <span>Last startup error</span><b id="diagError">—</b>
+    </div>
+  </div>
+  <div class="v12-action" id="v12Action"><div class="state watch" id="v12State">WATCH</div><div class="line" id="v12Reason">Waiting for verified Robinhood price and positive execution-adjusted edge.</div><div class="numbers"><div><small>MODEL P(WIN)</small><b id="v12Pwin">—</b></div><div><small>MAX BUY</small><b id="v12MaxBuy">—</b></div><div><small>CURRENT</small><b id="v12Current">—</b></div></div><div class="line" id="v12Regime">REGIME —</div></div>
+  <div class="quick-exec" id="quickExec">
+    <div class="quick-exec-title"><b>Robinhood quick check</b><span>manual execution</span></div>
+    <div id="execLockBanner" class="notice warn" style="margin:0 0 9px;padding:9px 10px;font-size:12px">WAITING TO LOCK EXECUTION SIDE</div>
+    <div class="quick-exec-grid">
+      <div class="quick-field">
+        <label>Robinhood target</label>
+        <input id="rhTarget" inputmode="decimal" placeholder="e.g. 76768.87">
+      </div>
+      <div class="quick-field">
+        <label>ENTER <span class="quick-side" id="rhSide">SIDE</span> PRICE ¢</label>
+        <input id="rhExecPrice" inputmode="decimal" placeholder="e.g. 61">
+      </div>
+    </div>
+    <label class="quick-confirm"><input id="rhContractConfirm" type="checkbox"><span>I verified Robinhood shows this 15-minute target/window: <b id="rhConfirmTarget">—</b></span></label>
+    <div class="quick-actions">
+      <button id="captureRh">Use current RH price</button>
+      <button id="clearRh">Clear</button>
+    </div>
+    <div id="autoEstimateBoth" class="notice warn" style="margin-top:9px">UP / DOWN indicative pricing loading…</div>
+    <div id="autoPricePanel" class="notice warn" style="margin-top:9px">Automatic external quote: waiting for a matched, fresh external market.</div>
+    <div class="quick-status">External market data is confirmation only. The Robinhood target above is the settlement target used by the model.</div>
+  </div>
+
+  <div id="betGuide" class="bet-guide block">
+    <div class="eyebrow">Robinhood price discipline</div>
+    <div class="maxpay" id="maxPay">WAIT</div>
+    <div class="hint" id="priceGuide">No bet until the external market is healthy and you verify the matching Robinhood target/window and enter its live price.</div>
+  </div>
+  <div class="decision-grid">
+    <div class="decision-metric"><div class="label" id="actionPriceLabel">Robinhood price</div><div class="num" id="actionPrice">—</div></div>
+    <div class="decision-metric"><div class="label">Decision fair value</div><div class="num" id="fairValue">—</div></div>
+    <div class="decision-metric"><div class="label">Edge after ask</div><div class="num" id="entryEdge">—</div></div>
+    <div class="decision-metric"><div class="label">Time left</div><div class="num" id="simpleTime">—</div></div>
+  </div>
+  <div class="card2" style="margin-top:14px">
+    <div class="support-row"><span>Contract / target</span><b id="targetSummary">—</b></div>
+    <div class="support-row"><span>Trend</span><b id="trendSummary">—</b></div>
+    <div class="support-row"><span>Volatility</span><b id="volSummary">—</b></div>
+    <div class="support-row"><span>Settlement progress</span><b id="settlementSummary">Pre-window</b></div>
+    <div class="support-row"><span>Market + book support</span><b id="agreementSummary">—</b></div>
+    <div class="support-row"><span>Data quality</span><b id="simpleQuality">—</b></div>
+    <div class="support-row"><span>Auto calibration / settlement</span><b id="autoStatus" class="auto-ok">ON</b></div>
+  </div>
+  <div id="decisionWhy" class="notice warn">Waiting for enough live data.</div>
+  <button id="toggleAdvanced" class="advanced-toggle">Hide advanced diagnostics</button>
+</div>
+
+<div class="card">
+  <div class="row"><div class="mid">Feed matrix</div><button id="refresh">Reconnect all</button></div>
+  <div class="two" style="margin-top:12px">
+    <div class="pill"><span id="kdot" class="dot"></span><span id="kstat">Kalshi connecting…</span></div>
+    <div class="pill"><span id="cdot" class="dot"></span><span id="cstat">Coinbase connecting…</span></div>
+    <div class="pill"><span id="rdot" class="dot"></span><span id="rstat">Kraken connecting…</span></div>
+    <div class="pill"><span id="pdot" class="dot"></span><span id="pstat">Polymarket discovery…</span></div>
+  </div>
+  <hr>
+  <div class="grid">
+    <div class="k">Model data quality</div><div class="val qscore" id="dq">0/100</div>
+    <div class="k">Execution data quality</div><div class="val qscore" id="execQ">0/100</div>
+    <div class="k">Operating mode</div><div class="val" id="mode">INITIALIZING</div>
+    <div class="k">Execution permission</div><div class="val" id="permission">PASS ONLY</div>
+  </div>
+  <div class="bar" style="margin-top:10px"><div id="dqbar" class="fill"></div></div>
+  <div id="feedmsg" class="notice warn">Initializing data feeds.</div>
+  <details><summary>Connection diagnostics</summary><div class="grid small" style="margin-top:10px"><div class="k">Kalshi discovery route</div><div class="val small" id="kroute">—</div><div class="k">Kalshi last response</div><div class="val small" id="khttp">—</div><div class="k">Kalshi last error</div><div class="val small red" id="kerr">—</div><div class="k">Last good Kalshi age</div><div class="val small" id="kage">—</div><div class="k">Relay status</div><div class="val small" id="relayStatus">—</div><div class="k">Relay latency</div><div class="val small" id="relayLatency">—</div><div class="k">Relay cache / stale</div><div class="val small" id="relayCache">—</div><div class="k">Upstream status</div><div class="val small" id="relayUpstream">—</div><div class="k">Inferred ticker candidates</div><div class="val small" id="kcandidates">—</div></div></details>
+</div>
+
+<div class="card">
+  <div class="mid">Active 15-minute contract</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Kalshi contract</div><div class="val" id="ticker">—</div>
+    <div class="k">Kalshi target</div><div class="val" id="ktarget">—</div>
+    <div class="k">Active model target</div><div class="val" id="target">—</div>
+    <div class="k">Target source</div><div class="val" id="targetSrc">Kalshi</div>
+    <div class="k">Contract end</div><div class="val" id="end">—</div>
+    <div class="k">Countdown</div><div class="val big" id="count">—</div>
+  </div>
+  <div class="card2">
+    <div class="muted small">Robinhood target entry has moved to the sticky quick-check panel beneath the main signal. The external target shown above remains separate for comparison.</div>
+    <button id="clearTarget" style="margin-top:10px">Clear Robinhood target</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="row"><div class="mid">Robinhood execution check</div><div class="tag">manual • no Robinhood API</div></div>
+  <div class="sub" style="margin-top:7px">Execution controls are pinned beneath the main signal for one-screen phone use. This section is now diagnostics only.</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">External market UP</div><div class="val" id="rhProb">—</div>
+    <div class="k">External target</div><div class="val" id="rhBasis">—</div>
+    <div class="k">Robinhood target</div><div class="val" id="rhTargetDisplay">—</div>
+    <div class="k">Target difference</div><div class="val" id="rhTargetDiff">—</div>
+    <div class="k">External comparability</div><div class="val" id="rhComparable">—</div>
+    <div class="k">Robinhood window verification</div><div class="val" id="basisEst">Not verified</div>
+    <div class="k">Manual price age</div><div class="val" id="basisMeta">—</div>
+    <div class="k">Model vs Robinhood price</div><div class="val" id="rhGap">—</div>
+  </div>
+  <div id="edgeHero" class="signal" style="font-size:31px;margin-top:14px;padding:16px 8px">ROBINHOOD EDGE: —</div>
+  <div class="grid" style="margin-top:12px">
+    <div class="k">Comparison source</div><div class="val" id="edgeSource">Manual Robinhood price</div>
+    <div class="k">Current divergence</div><div class="val" id="edgeNow">—</div>
+    <div class="k">Peak divergence this contract</div><div class="val" id="edgePeak">—</div>
+    <div class="k">Divergence change since peak</div><div class="val" id="edgeClose">—</div>
+    <div class="k">Edge tracking samples</div><div class="val" id="edgeSamples">0</div>
+  </div>
+  <div class="muted small" style="margin-top:8px">DepthFeed/Kalshi is used only as an external market and book cross-check. The price used for the actual Robinhood edge is the value you enter above; the dashboard never labels an external quote as a Robinhood executable quote.</div>
+</div>
+<div class="card">
+  <div class="mid">Cross-venue spot proxy</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Coinbase BTC-USD</div><div class="val" id="cb">—</div>
+    <div class="k">Kraken BTC/USD</div><div class="val" id="kr">—</div>
+    <div class="k">Bitstamp BTC/USD</div><div class="val" id="bs">—</div>
+    <div class="k">Gemini BTC/USD</div><div class="val" id="gm">—</div>
+    <div class="k">Weighted robust spot proxy</div><div class="val big" id="proxy">—</div>
+    <div class="k">BRTI-basis adjusted proxy</div><div class="val" id="adjProxy">—</div>
+    <div class="k">Cross-venue dispersion (MAD)</div><div class="val" id="disp">—</div>
+    <div class="k">Distance from target</div><div class="val" id="dist">—</div>
+    <div class="k">Proxy venues used</div><div class="val" id="venuesUsed">—</div>
+    <div class="k">15s / 30s / 60s momentum</div><div class="val" id="moms">—</div>
+    <div class="k">1s realized σ</div><div class="val" id="sigma">—</div>
+    <div class="k">Volatility regime</div><div class="val" id="volreg">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="mid">Settlement engine</div>
+  <div class="sub" style="margin-top:7px">The final value is modeled as a 60-second average, not a single terminal print. V9.3 also time-decays momentum, detects trend persistence vs mean reversion, blends volatility across multiple horizons, and caps confidence more aggressively early in the contract.</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Settlement phase</div><div class="val" id="phase">—</div>
+    <div class="k">Proxy observations in final 60s</div><div class="val" id="settN">0 / 60</div>
+    <div class="k">Observed final-minute avg</div><div class="val" id="settAvg">—</div>
+    <div class="k">Required avg for remaining seconds</div><div class="val" id="reqAvg">—</div>
+    <div class="k">Expected settlement average</div><div class="val" id="expAvg">—</div>
+    <div class="k">Settlement uncertainty σ</div><div class="val" id="settSD">—</div>
+    <div class="k">Basis/venue uncertainty add-on</div><div class="val" id="basisUnc">—</div>
+    <div class="k">Model-only directional lean</div><div class="val" id="lean">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="mid">Prediction-market microstructure</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Kalshi YES bid / ask</div><div class="val" id="kyes">—</div>
+    <div class="k">Kalshi NO bid / ask</div><div class="val" id="kno">—</div>
+    <div class="k">Kalshi normalized midpoint</div><div class="val" id="kprob">—</div>
+    <div class="k">Kalshi spread</div><div class="val" id="kspread">—</div>
+    <div class="k">DepthFeed book pressure</div><div class="val" id="dfimb">—</div>
+    <div class="k">Liquidity-weighted UP</div><div class="val" id="dfliq">—</div>
+    <div class="k">DepthFeed microprice UP</div><div class="val" id="dfmicro">—</div>
+    <div class="k">Top-10 YES / NO depth</div><div class="val" id="dfdepth">—</div>
+    <div class="k">Top-book depth imbalance</div><div class="val" id="imb">—</div>
+    <div class="k">Polymarket 15m UP probability</div><div class="val" id="poly">—</div>
+    <div class="k">External-market disagreement</div><div class="val" id="xdis">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="mid">Quant probability & execution filter</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Raw settlement model UP</div><div class="val" id="rawP">—</div>
+    <div class="k">Calibrated model UP</div><div class="val" id="calP">—</div>
+    <div class="k">Probability cap</div><div class="val" id="pCap">—</div>
+    <div class="k">Trend persistence score</div><div class="val" id="trendPersist">—</div>
+    <div class="k">Momentum contribution to expected avg</div><div class="val" id="driftImpact">—</div>
+    <div class="k">Multi-horizon σ blend</div><div class="val" id="sigmaBlend">—</div>
+    <div class="k">Model DOWN</div><div class="val" id="downP">—</div>
+    <div class="k">Kalshi implied UP</div><div class="val" id="mkP">—</div>
+    <div class="k">Model vs Kalshi gap</div><div class="val" id="gap">—</div>
+    <div class="k">Required edge</div><div class="val" id="edgeReq">—</div>
+    <div class="k">UP edge after ask</div><div class="val" id="upEdge">—</div>
+    <div class="k">DOWN edge after ask</div><div class="val" id="dnEdge">—</div>
+    <div class="k">30s probability stability</div><div class="val" id="stab">—</div>
+    <div class="k">Momentum-shock state</div><div class="val" id="shock">—</div>
+    <div class="k">Calibration sample size</div><div class="val" id="calN">0</div>
+    <div class="k">Historical Brier score</div><div class="val" id="brier">—</div>
+    <div class="k">Resilience confidence</div><div class="val" id="resConf">—</div>
+    <div class="k">Normalized target distance</div><div class="val" id="zdist">—</div>
+    <div class="k">Feed confidence penalty</div><div class="val" id="feedPenalty">—</div>
+    <div class="k">Execution probability</div><div class="val" id="execP">—</div>
+    <div class="k">Probability 60s / 30s / 15s / now</div><div class="val" id="ptraj">—</div>
+    <div class="k">Distance-only probability</div><div class="val" id="distP">—</div>
+    <div class="k">Momentum probability effect</div><div class="val" id="momPEffect">—</div>
+    <div class="k">Calibration + resilience effect</div><div class="val" id="calEffect">—</div>
+  </div>
+  <div id="modelCall" class="signal" style="margin-bottom:10px">MODEL CALL: —</div>
+  <div id="signal" class="signal">PASS</div>
+  <div id="reason" class="muted" style="margin-top:12px">Collecting institutional-quality context.</div>
+</div>
+
+<div class="card">
+  <div class="row"><div class="mid">Auto-captured bet signals</div><div class="tag">local device only</div></div>
+  <div class="sub" style="margin-top:7px">As soon as a Robinhood target is entered for the current window, V12.5 automatically records every qualifying BET UP / BET DOWN trigger. No manual resolve click is required.</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Captured triggers</div><div class="val" id="acCaptured">0</div>
+    <div class="k">Resolved triggers</div><div class="val" id="acResolved">0</div>
+    <div class="k">Winning triggers</div><div class="val" id="acWins">0</div>
+    <div class="k">Hit rate</div><div class="val" id="acHit">—</div>
+    <div class="k">Last trigger</div><div class="val small" id="acLast">—</div>
+    <div class="k">Last auto resolution</div><div class="val small" id="acResolve">—</div>
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Flight-recorder rows</div><div class="val" id="frRows">0</div>
+    <div class="k">Logging cadence</div><div class="val">10 sec + state changes</div>
+    <div class="k">Last recorded state</div><div class="val small" id="frLast">—</div>
+  </div>
+  <div class="sub" style="margin-top:8px">Records the model path automatically as soon as a valid Robinhood target is entered: PASS, WATCH and BET states, plus immediate snapshots when the state changes.</div>
+  <div class="row" style="margin-top:14px">
+    <button id="exportFlightCsv">Export full flight log CSV</button>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button id="exportAutoCsv">Export auto-capture CSV</button>
+    <button id="clearAutoCapture">Clear auto-capture</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="row"><div class="mid">Shadow book / calibration</div><div class="tag">local device only</div></div>
+  <div class="grid" style="margin-top:14px">
+    <div class="k">Logged model snapshots</div><div class="val" id="logN">0</div>
+    <div class="k">Resolved snapshots</div><div class="val" id="resN">0</div>
+    <div class="k">BUY snapshots</div><div class="val" id="buyN">0</div>
+    <div class="k">Resolved BUY hit rate</div><div class="val" id="hit">—</div>
+    <div class="k">Robinhood snapshots</div><div class="val" id="rhN">0</div>
+    <div class="k">Resolved model Brier</div><div class="val" id="modelBrier">—</div>
+    <div class="k">Resolved Robinhood Brier</div><div class="val" id="rhBrier">—</div>
+  </div>
+  <div class="row" style="margin-top:14px"><button id="exportCsv">Export calibration CSV</button><button id="markUp">Resolve current UP</button><button id="markDown">Resolve current DOWN</button><button id="clearLogs">Clear local logs</button></div>
+  <details open style="margin-top:14px"><summary>V10.7 calibration scorecard</summary>
+    <div class="grid" style="margin-top:12px">
+      <div class="k">Resolved contracts</div><div class="val" id="scContracts">0</div>
+      <div class="k">Model Brier</div><div class="val" id="scBrier">—</div>
+      <div class="k">Model log loss</div><div class="val" id="scLogLoss">—</div>
+      <div class="k">Directional accuracy</div><div class="val" id="scAccuracy">—</div>
+      <div class="k">Market Brier</div><div class="val" id="scMarketBrier">—</div>
+      <div class="k">Model vs market Brier</div><div class="val" id="scVsMarket">—</div>
+    </div>
+    <div class="small muted" id="scTime" style="margin-top:12px;line-height:1.55">Time buckets: —</div>
+    <div class="small muted" id="scCal" style="margin-top:8px;line-height:1.55">Calibration buckets: —</div>
+    <div class="small muted" style="margin-top:8px;line-height:1.45">V10.7 uses settlement-progress calibration and learns additional logit scaling only after at least five resolved contracts exist in a time bucket. Official outcomes are imported automatically when available. Final-minute probability now uses locked one-second settlement observations and forecasts only the unknown remainder.</div>
+  </details>
+  <details><summary>What gets logged?</summary><div class="muted small" style="margin-top:8px;line-height:1.45">At most once every 10 seconds: contract, time remaining, target source, proxy price, adjusted proxy, raw/calibrated probability, market odds, BRTI basis state, edges, signal, data quality, volatility and dispersion. Manual Robinhood snapshots record BRTI and normalized UP odds beside the model. Resolutions can be imported from Kalshi when available or marked manually.</div></details>
+</div>
+
+<div class="card">
+  <div class="mid">Model discipline</div>
+  <div class="muted" style="line-height:1.55;margin-top:9px">
+    V12.3 keeps the settlement model independent, preserves the execution-side lock, and automatically captures qualifying BET flashes once the Robinhood target/window is entered and verified. Model direction can change freely, but a Robinhood quote is permanently associated with the locked UP or DOWN side. Opposite-side movement cancels the entry workflow, clears the quote, and requires a fresh stability period before a new side can be priced. The user enters Robinhood's exact target and verifies the 15-minute window; the model uses that target. DepthFeed/Kalshi/Polymarket remain external confirmation and are automatically excluded from decision support when the external target differs materially. Robinhood execution price remains manual-only. External quotes are never relabeled as Robinhood executable prices. Missing or stale external feeds, an unverified Robinhood contract, or a missing/stale manual Robinhood price forces WATCH/PASS. The direct CF Benchmarks BRTI feed is not embedded because it requires authenticated/licensed access.
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const N=x=>{const v=parseFloat(x);return Number.isFinite(v)?v:null};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const money=x=>x==null?'—':'$'+x.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=x=>x==null?'—':(x*100).toFixed(1)+'%';
+const cents=x=>x==null?'—':(x*100).toFixed(1)+'¢';
+const signedMoney=x=>x==null?'—':(x>=0?'+':'-')+'$'+Math.abs(x).toFixed(2);
+function setDiag(id,text,kind='warn'){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className=kind==='good'?'status-good':kind==='bad'?'status-bad':'status-warn';}
+function reportStartupError(err){
+  const msg=(err&&err.message)?err.message:String(err||'Unknown error');
+  const el=document.getElementById('diagError');if(el)el.textContent=msg.slice(0,180);
+  setDiag('diagJs','ERROR','bad');
+}
+window.addEventListener('error',e=>reportStartupError(e.error||e.message));
+window.addEventListener('unhandledrejection',e=>reportStartupError(e.reason));
+setDiag('diagJs','RUNNING','good');
+const median=a=>{const b=a.filter(Number.isFinite).sort((x,y)=>x-y);if(!b.length)return null;const m=Math.floor(b.length/2);return b.length%2?b[m]:(b[m-1]+b[m])/2};
+const mean=a=>{const b=a.filter(Number.isFinite);return b.length?b.reduce((s,x)=>s+x,0)/b.length:null};
+const stdev=a=>{const b=a.filter(Number.isFinite);if(b.length<2)return null;const m=mean(b);return Math.sqrt(b.reduce((s,x)=>s+(x-m)**2,0)/(b.length-1))};
+function normcdf(x){const t=1/(1+.2316419*Math.abs(x)),d=.3989423*Math.exp(-x*x/2);let p=1-d*t*(.319381530+t*(-.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));return x>=0?p:1-p}
+
+const S={
+ market:null, marketTs:0, orderbook:null, orderTs:0, lastTicker:null,
+ px:{coinbase:null,kraken:null,bitstamp:null,gemini:null},
+ pxTs:{coinbase:0,kraken:0,bitstamp:0,gemini:0},
+ cbBid:null,cbAsk:null, krBid:null,krAsk:null,
+ cbws:null,krws:null,
+ sec:[], settle:[], pHist:[],
+ poly:null,polyTs:0,polySlug:null,
+ targetOverride:null,overrideTicker:null,
+ candidate:null,candidateTs:0,shockDir:null,shockTs:0,
+ lastLog:0, logs:[],
+ resolveQueue:{}, activeSlot:null,
+ kalshiDiag:{route:'—',http:'—',error:'—',lastAttempt:0},
+ relayDiag:{status:'—',latency:null,cache:'—',stale:false,upstream:'—',lastOk:0},
+ rhSnaps:[], rhExecPrice:null, rhExecTs:0, rhContractConfirmed:false,
+ execSide:null, execSideCandidate:null, execSideCandidateTs:0, sideFlipBlocked:false, sideFlipFrom:null, sideFlipAt:0,
+ depthfeed:null, depthfeedTs:0, dfMicro:null, execValidation:null, quoteSig:null, quoteChangedTs:0, marketDataTs:0, backfillTs:0, backfillBusy:false, edgeTrack:[], autoSnaps:[], checkpointSeen:{}, lastResolutionPoll:0, autoCapture:[], autoTriggerArmed:false, autoTriggerKey:null, autoLastResolveSlot:null, flightLog:[], lastFlightTs:0, lastFlightState:null, lastFlightSlot:null
+};
+const C={baseEdge:.055,minQuality:68,hardGap:.22,polyVeto:.27,unstable:.16,hold:8,noEntry:25,shockWindow:180,shockHold:20,maxLogs:5000,sideLockSec:5,sideMinConf:.55};
+const KALSHI_RELAY='https://btc15m-kalshi-relay.msliwa.workers.dev';
+let kalshiNextAllowed=0, kalshiFailures=0, depthfeedUnsupported=false;
+const kalshiCooldown=()=>Math.max(0,kalshiNextAllowed-Date.now());
+
+try{S.logs=JSON.parse(localStorage.getItem('v9ShadowLogs')||'[]');if(!Array.isArray(S.logs))S.logs=[]}catch(e){S.logs=[]}
+try{S.rhSnaps=JSON.parse(localStorage.getItem('v96RhSnaps')||'[]');if(!Array.isArray(S.rhSnaps))S.rhSnaps=[]}catch(e){S.rhSnaps=[]}
+try{S.autoSnaps=JSON.parse(localStorage.getItem('v105AutoSnaps')||'[]');if(!Array.isArray(S.autoSnaps))S.autoSnaps=[]}catch(e){S.autoSnaps=[]}
+try{S.autoCapture=JSON.parse(localStorage.getItem('v123AutoCapture')||'[]');if(!Array.isArray(S.autoCapture))S.autoCapture=[]}catch(e){S.autoCapture=[]}
+try{S.flightLog=JSON.parse(localStorage.getItem('v124FlightLog')||'[]');if(!Array.isArray(S.flightLog))S.flightLog=[]}catch(e){S.flightLog=[]}
+
+
+try{
+  const z=JSON.parse(localStorage.getItem('v9Target')||'null');
+  if(z&&N(z.v)>1000){S.targetOverride=N(z.v);S.overrideTicker=z.slot||z.ticker||null;$('rhTarget').value=S.targetOverride}
+}catch(e){}
+
+function marketTarget(m){
+ for(const k of ['floor_strike','cap_strike','functional_strike']){const x=N(m?.[k]);if(x!=null&&x>1000)return x}
+ const txt=[m?.title,m?.subtitle,m?.yes_sub_title,m?.rules_primary].filter(Boolean).join(' ');
+ const z=txt.match(/\$?([0-9]{2,3},?[0-9]{3}(?:\.[0-9]+)?)/);return z?N(z[1].replace(',','')):null;
+}
+function slotKey(ts=Date.now()){
+  return String(Math.floor(ts/900000));
+}
+function inferredEndDate(ts=Date.now()){
+  return new Date((Math.floor(ts/900000)+1)*900000);
+}
+function endDate(m){
+  const x=m?.close_time||m?.latest_expiration_time;
+  const d=x?new Date(x):null;
+  return d&&!isNaN(d)?d:inferredEndDate();
+}
+function currentContractId(){
+  return S.market?.ticker||('RH15M-'+slotKey());
+}
+function inferredContractLabel(){
+  const end=inferredEndDate(), start=new Date(end.getTime()-15*60*1000);
+  const fmt=d=>d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  return `${fmt(start)}–${fmt(end)}`;
+}
+function overrideIsCurrent(){
+  return S.targetOverride!=null && (!S.overrideTicker || String(S.overrideTicker)===slotKey());
+}
+function activeTarget(){
+  if(overrideIsCurrent()) return S.targetOverride;
+  return marketTarget(S.market);
+}
+function externalTarget(){ return S.execValidation?.dfTarget ?? marketTarget(S.market); }
+function targetComparison(){
+  const rh=overrideIsCurrent()?S.targetOverride:null, ext=externalTarget();
+  const diff=(rh!=null&&ext!=null)?rh-ext:null;
+  // A few dollars can arise from venue/rounding differences. Larger gaps are different contracts for confirmation purposes.
+  const tolerance=5;
+  return {rh,ext,diff,tolerance,comparable:diff!=null&&Math.abs(diff)<=tolerance};
+}
+function left(){
+  const d=endDate(S.market);
+  return d?Math.max(0,(d-Date.now())/1000):null
+}
+function askYes(){let x=N(S.market?.yes_ask_dollars);if(x==null){const nb=N(S.market?.no_bid_dollars);if(nb!=null)x=1-nb}return x}
+function askNo(){let x=N(S.market?.no_ask_dollars);if(x==null){const yb=N(S.market?.yes_bid_dollars);if(yb!=null)x=1-yb}return x}
+function bidYes(){return N(S.market?.yes_bid_dollars)}
+function bidNo(){return N(S.market?.no_bid_dollars)}
+function normalizedMarketP(){const yb=bidYes(),ya=askYes();if(yb!=null&&ya!=null)return (yb+ya)/2;const ya2=askYes(),na=askNo();return ya2!=null&&na!=null?ya2/(ya2+na):null}
+function rhManualAsk(){const c=N(S.rhExecPrice);return c!=null&&c>0&&c<100?c/100:null}
+function rhPriceFresh(){return rhManualAsk()!=null&&S.rhExecTs>0&&(Date.now()-S.rhExecTs)<120000}
+function clearRhPriceOnly(){
+ S.rhExecPrice=null;S.rhExecTs=0;
+ if($('rhExecPrice'))$('rhExecPrice').value='';
+}
+function resetExecutionLock(){
+ S.execSide=null;S.execSideCandidate=null;S.execSideCandidateTs=0;
+ S.sideFlipBlocked=false;S.sideFlipFrom=null;S.sideFlipAt=0;
+ clearRhPriceOnly();
+}
+function modelSideState(dp){
+ if(dp==null)return {side:null,conf:null};
+ const side=dp>=.5?'UP':'DOWN',conf=side==='UP'?dp:1-dp;
+ return {side,conf};
+}
+function updateExecutionSide(dp){
+ const now=Date.now(), ms=modelSideState(dp), side=ms.side, conf=ms.conf;
+ const qualified=side&&conf!=null&&conf>=C.sideMinConf;
+
+ if(!S.execSide){
+   if(!qualified){S.execSideCandidate=null;S.execSideCandidateTs=0;return;}
+   if(S.execSideCandidate!==side){S.execSideCandidate=side;S.execSideCandidateTs=now;return;}
+   if(now-S.execSideCandidateTs>=C.sideLockSec*1000){
+     S.execSide=side;S.execSideCandidate=null;S.execSideCandidateTs=0;
+     S.sideFlipBlocked=false;S.sideFlipFrom=null;S.sideFlipAt=0;clearRhPriceOnly();
+   }
+   return;
+ }
+
+ // A weak/neutral model does not silently change the locked side, but it cannot be entered.
+ if(!qualified)return;
+
+ if(side===S.execSide){
+   if(S.sideFlipBlocked){
+     // Model returned to the locked side before the opposite side stabilized.
+     S.sideFlipBlocked=false;S.sideFlipFrom=null;S.sideFlipAt=0;
+     S.execSideCandidate=null;S.execSideCandidateTs=0;
+   }
+   return;
+ }
+
+ // First opposite-side observation: cancel the active workflow immediately.
+ if(!S.sideFlipBlocked){
+   S.sideFlipBlocked=true;S.sideFlipFrom=S.execSide;S.sideFlipAt=now;
+   S.execSideCandidate=side;S.execSideCandidateTs=now;
+   clearRhPriceOnly();
+   return;
+ }
+
+ // Opposite side must remain stable before it becomes the new execution side.
+ if(S.execSideCandidate!==side){
+   S.execSideCandidate=side;S.execSideCandidateTs=now;
+   return;
+ }
+ if(now-S.execSideCandidateTs>=C.sideLockSec*1000){
+   S.execSide=side;S.sideFlipBlocked=false;S.sideFlipFrom=null;S.sideFlipAt=0;
+   S.execSideCandidate=null;S.execSideCandidateTs=0;clearRhPriceOnly();
+ }
+}
+
+
+function persistAutoCapture(){
+  try{localStorage.setItem('v123AutoCapture',JSON.stringify(S.autoCapture.slice(-5000)))}catch(e){}
+}
+function autoCaptureStats(){
+  const a=S.autoCapture||[], r=a.filter(x=>x.resolved), wins=r.filter(x=>x.correct===true).length;
+  const el=id=>document.getElementById(id);
+  if(el('acCaptured'))el('acCaptured').textContent=String(a.length);
+  if(el('acResolved'))el('acResolved').textContent=String(r.length);
+  if(el('acWins'))el('acWins').textContent=String(wins);
+  if(el('acHit'))el('acHit').textContent=r.length?((wins/r.length)*100).toFixed(1)+'%':'—';
+  const last=a[a.length-1];
+  if(el('acLast'))el('acLast').textContent=last?`${last.side} ${Math.round((last.price||0)*100)}¢ • ${Math.round(last.left||0)}s left`:'—';
+  const rr=[...r].reverse()[0];
+  if(el('acResolve'))el('acResolve').textContent=rr?`${rr.outcome} • ${rr.correct?'WIN':'LOSS'}${rr.provisional?' • provisional':''}`:'—';
+}
+function currentWindowKey(){
+  return slotKey();
+}
+function autoCaptureEligible(){
+  // Entering a valid Robinhood target arms data collection immediately.
+  // Contract verification still gates BET eligibility elsewhere, but never blocks logging.
+  return overrideIsCurrent() && S.targetOverride!=null;
+}
+function recordAutoTrigger(side, decisionP, fair, maxBuy, px, l){
+  if(!autoCaptureEligible()||!side||px==null||maxBuy==null)return;
+  const key=`${currentWindowKey()}|${side}|${Math.round(px*100)}|${Math.round(maxBuy*100)}|${Math.floor(Date.now()/3000)}`;
+  if(S.autoTriggerKey===key)return;
+  const pwin=side==='UP'?decisionP:(decisionP==null?null:1-decisionP);
+  const rec={
+    id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),
+    ts:Date.now(), slot:currentWindowKey(), side,
+    target:S.targetOverride, price:px, maxBuy, fair, pwin,
+    left:l, proxy:proxy(), modelProxy:modelProxy(),
+    extTarget:externalTarget(), targetDiff:targetComparison().diff,
+    marketP:normalizedMarketP(), quality:null,
+    resolved:false, outcome:null, correct:null, provisional:true,
+    settleAvg:null, resolvedTs:null
+  };
+  S.autoCapture.push(rec); S.autoTriggerKey=key; persistAutoCapture(); autoCaptureStats();
+}
+function settlementAverageForSlot(slot){
+  const n=Number(slot); if(!Number.isFinite(n))return null;
+  const endSec=(n+1)*900, startSec=endSec-60;
+  const vals=(S.sec||[])
+    .filter(x=>x&&x.sec>=startSec&&x.sec<endSec)
+    .map(x=>N(x.p??x.price)).filter(Number.isFinite);
+  // Require enough actual observations to avoid resolving from a stray print.
+  return vals.length>=20?mean(vals):null;
+}
+function resolveAutoCaptureForSlot(slot){
+  const curSlot=currentWindowKey();
+  if(String(slot)===String(curSlot))return;
+  const pending=(S.autoCapture||[]).filter(x=>!x.resolved && String(x.slot)===String(slot));
+  const flight=(S.flightLog||[]).filter(x=>!x.resolved && String(x.slot)===String(slot));
+  if(!pending.length&&!flight.length)return;
+  const target=(pending[0]?.target)??(flight[0]?.target);
+  if(target==null)return;
+  const avg=settlementAverageForSlot(slot);
+  if(avg==null)return;
+  const outcome=avg>=target?'UP':'DOWN', now=Date.now();
+  for(const r of pending){
+    r.resolved=true;r.outcome=outcome;r.correct=(r.side===outcome);
+    r.settleAvg=avg;r.resolvedTs=now;r.provisional=true;
+  }
+  for(const r of flight){
+    r.resolved=true;r.outcome=outcome;
+    r.correct=r.side?(r.side===outcome):null;
+    r.settleAvg=avg;r.resolvedTs=now;r.provisional=true;
+  }
+  persistAutoCapture();persistFlight();autoCaptureStats();flightStats();
+}
+function autoResolveOldSlots(){
+  const slots=[...new Set([
+    ...(S.autoCapture||[]).filter(x=>!x.resolved).map(x=>String(x.slot)),
+    ...(S.flightLog||[]).filter(x=>!x.resolved).map(x=>String(x.slot))
+  ])];
+  for(const sl of slots) resolveAutoCaptureForSlot(sl);
+}
+
+function persistFlight(){
+  try{localStorage.setItem('v124FlightLog',JSON.stringify(S.flightLog.slice(-12000)))}catch(e){}
+}
+function flightStats(){
+  const el=id=>document.getElementById(id), a=S.flightLog||[], last=a[a.length-1];
+  if(el('frRows'))el('frRows').textContent=String(a.length);
+  if(el('frLast'))el('frLast').textContent=last?`${last.state} ${last.side||''} • ${Math.round(last.left||0)}s left`:'—';
+}
+function recordFlight(state,side,decisionP,fair,maxBuy,px,l,force=false){
+  if(!autoCaptureEligible())return;
+  const now=Date.now(), slot=currentWindowKey();
+  const changed=state!==S.lastFlightState || String(slot)!==String(S.lastFlightSlot);
+  if(!force && !changed && now-S.lastFlightTs<10000)return;
+  const tc=targetComparison();
+  S.flightLog.push({
+    ts:now,slot,state,side:side||'',
+    target:S.targetOverride,price:px,maxBuy,fair,
+    pwin:decisionP==null?null:(side==='DOWN'?1-decisionP:decisionP),
+    decisionP,left:l,proxy:proxy(),modelProxy:modelProxy(),
+    extTarget:externalTarget(),targetDiff:tc.diff,
+    marketP:normalizedMarketP(),targetComparable:tc.comparable,
+    rhVerified:!!S.rhContractConfirmed,
+    resolved:false,outcome:null,correct:null,settleAvg:null,resolvedTs:null,provisional:null
+  });
+  S.lastFlightTs=now;S.lastFlightState=state;S.lastFlightSlot=slot;
+  persistFlight();flightStats();
+}
+function flightCsv(){
+  const rows=S.flightLog||[];
+  const cols=['ts','slot','state','side','target','price','maxBuy','fair','pwin','decisionP','left','proxy','modelProxy','extTarget','targetDiff','marketP','targetComparable','rhVerified','resolved','outcome','correct','settleAvg','resolvedTs','provisional'];
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  return [cols.join(','),...rows.map(r=>cols.map(c=>q(r[c])).join(','))].join('\n');
+}
+function autoCsv(){
+  const rows=S.autoCapture||[];
+  const cols=['ts','slot','side','target','price','maxBuy','fair','pwin','left','proxy','modelProxy','extTarget','targetDiff','marketP','resolved','outcome','correct','provisional','settleAvg','resolvedTs'];
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  return [cols.join(','),...rows.map(r=>cols.map(c=>q(r[c])).join(','))].join('\n');
+}
+function downloadText(name,text,type='text/csv'){
+  const b=new Blob([text],{type});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+
+function pickMarket(arr){
+ const now=Date.now();
+ return (arr||[])
+ .filter(m=>m&&['open','active','initialized'].includes(String(m.status).toLowerCase()))
+ .map(m=>({m,e:endDate(m),t:marketTarget(m)}))
+ .filter(x=>x.e&&x.e>now-12000&&x.e<now+18*60*1000)
+ .sort((a,b)=>a.e-b.e)[0]?.m||null;
+}
+async function jsonFetch(url,timeout=3500){
+ const ac=new AbortController(),to=setTimeout(()=>ac.abort(),timeout);
+ try{const r=await fetch(url,{cache:'no-store',signal:ac.signal,headers:{'Accept':'application/json'}});if(!r.ok){let detail='';try{detail=(await r.text()).slice(0,180)}catch(_){}
+ const e=Error('HTTP '+r.status+(detail?' '+detail:''));e.status=r.status;throw e}return await r.json()}finally{clearTimeout(to)}
+}
+async function relayJson(path,timeout=4500){
+ const ac=new AbortController(),to=setTimeout(()=>ac.abort(),timeout);
+ const t0=performance.now();
+ try{
+   const r=await fetch(KALSHI_RELAY+path,{cache:'no-store',signal:ac.signal,headers:{'Accept':'application/json'}});
+   const latency=Math.round(performance.now()-t0);
+   const cache=(r.headers.get('X-Relay-Cache')||'MISS').toUpperCase();
+   const stale=r.headers.get('X-Relay-Stale')==='1';
+   const upstream=r.headers.get('X-Upstream-Status')||String(r.status);
+   S.relayDiag={status:r.ok?'OK':'HTTP '+r.status,latency,cache,stale,upstream,lastOk:r.ok?Date.now():S.relayDiag.lastOk};
+   const text=await r.text();
+   let j=null;try{j=JSON.parse(text)}catch(_){}
+   if(!r.ok){
+     const e=Error(j?.error?.message||j?.message||j?.error?.code||j?.error||('HTTP '+r.status));
+     e.status=r.status;e.body=j||text;
+      if(r.status===429||j?.error==='upstream_rate_limited'||j?.error?.code==='too_many_requests'||j?.error?.code==='upstream_rate_limited'){
+        const retry=Number(j?.retryAfterSeconds||r.headers.get('Retry-After')||30);
+        kalshiNextAllowed=Math.max(kalshiNextAllowed,Date.now()+Math.max(60,Math.min(300,retry))*1000);
+      }
+      throw e;
+   }
+   return j;
+ }finally{clearTimeout(to)}
+}
+function diagKalshi(route,http,error=''){S.kalshiDiag={route,http,error,lastAttempt:Date.now()};}
+function dfRows(side){return Array.isArray(side)?side.map(r=>[N(r?.[0]),N(r?.[1])]).filter(r=>r[0]!=null&&r[1]!=null&&r[1]>0):[]}
+function depthMicro(book){
+ const yes=dfRows(book?.yes),no=dfRows(book?.no); if(!yes.length&&!no.length)return null;
+ // DepthFeed ladders arrive best-to-worst. Do NOT use max(price): deep/sentinel rows can
+ // contain prices that are not the executable top of book and can manufacture fake edges.
+ const bestY=yes.length?yes[0][0]:null,bestN=no.length?no[0][0]:null;
+ const askY=bestN==null?null:1-bestN,askN=bestY==null?null:1-bestY;
+ const bidMid=bestY!=null&&askY!=null?(bestY+askY)/2:null;
+ const top=(rows,n=10)=>rows.slice(0,n);
+ const yd=top(yes).reduce((a,r)=>a+r[1],0),nd=top(no).reduce((a,r)=>a+r[1],0),imb=yd+nd?(yd-nd)/(yd+nd):null;
+ const weighted=(rows)=>{const q=top(rows,20),z=q.reduce((a,r)=>a+r[1],0);return z?q.reduce((a,r)=>a+r[0]*r[1],0)/z:null};
+ const wy=weighted(yes),wn=weighted(no),liq=wy!=null&&wn!=null?wy/(wy+wn):bidMid;
+ const spread=bestY!=null&&askY!=null?askY-bestY:null;
+ const crossed=bestY!=null&&bestN!=null?(bestY+bestN>1.005):false;
+ const orderedY=yes.length<2||yes[1][0]<=yes[0][0]+1e-9;
+ const orderedN=no.length<2||no[1][0]<=no[0][0]+1e-9;
+ const micro=bidMid!=null&&imb!=null?clamp(bidMid+imb*Math.max(.002,Math.max(0,spread||0))*.35,0.001,.999):bidMid;
+ return {bestY,bestN,askY,askN,mid:bidMid,spread,yesDepth:yd,noDepth:nd,imbalance:imb,liqP:liq,microP:micro,crossed,orderedY,orderedN};
+}
+function validateDepthFeedExecution(d,book,micro){
+ const reasons=[];
+ const ptb=d?.price_to_beat;
+ const dfTarget=N(ptb?.kalshi)??N(ptb?.limitless)??N(ptb?.polymarket)??N(ptb);
+ if(dfTarget==null) reasons.push('external target unavailable');
+ if(micro?.crossed) reasons.push('crossed binary book');
+ if(micro&&!micro.orderedY) reasons.push('YES ladder order invalid');
+ if(micro&&!micro.orderedN) reasons.push('NO ladder order invalid');
+ if(micro?.askY!=null&&(micro.askY<0.001||micro.askY>0.999)) reasons.push('YES ask invalid');
+ if(micro?.askN!=null&&(micro.askN<0.001||micro.askN>0.999)) reasons.push('NO ask invalid');
+ if(micro?.askY!=null&&micro?.askN!=null&&Math.abs((micro.askY+micro.askN)-1)>0.08) reasons.push('ask complement mismatch');
+ const feedP=N(book?.up);
+ if(feedP!=null&&micro?.mid!=null&&Math.abs(feedP-micro.mid)>0.10) reasons.push(`book probability mismatch ${(Math.abs(feedP-micro.mid)*100).toFixed(1)} pts`);
+ return {ok:reasons.length===0,identityVerified:dfTarget!=null,reasons,dfTarget,feedP};
+}
+
+function sourceTimestamp(book){
+  if(!book)return 0;
+  for(const k of ['recv_ts_ms','exch_ts_ms','timestamp_ms','ts_ms','ts','id']){
+    const v=Number(book?.[k]); if(Number.isFinite(v)&&v>1e12)return v;
+  }
+  for(const k of ['timestamp','time','received_at']){
+    const v=book?.[k]; if(v){const t=Date.parse(v); if(Number.isFinite(t))return t}
+  }
+  return 0;
+}
+
+async function fetchKalshi(){
+  if(S._kalshiBusy)return;
+  if(kalshiCooldown()>0){setDiag('diagMarket',`RATE LIMIT • RETRY ${Math.ceil(kalshiCooldown()/1000)}s`,'warn');return;}
+  S._kalshiBusy=true;
+  try{
+    // Preferred enriched route when available.
+    try{
+      if(depthfeedUnsupported)throw Error('DepthFeed route unavailable (cached)');
+      const j=await relayJson('/depthfeed/btc15m',5000); const d=j?.data||j; const book=d?.books?.kalshi;
+      if(!book)throw Error('DepthFeed returned no Kalshi book');
+      S.depthfeed=d;S.depthfeedTs=Date.now();S.dfMicro=depthMicro(book);S.execValidation=validateDepthFeedExecution(d,book,S.dfMicro);
+      const p=N(book.up)??S.dfMicro?.mid; const yb=S.dfMicro?.bestY, ya=S.dfMicro?.askY, nb=S.dfMicro?.bestN, na=S.dfMicro?.askN;
+      const qsig=[p,yb,ya,nb,na,S.dfMicro?.imbalance].map(x=>x==null?'':Number(x).toFixed(5)).join('|');
+      if(qsig!==S.quoteSig){S.quoteSig=qsig;S.quoteChangedTs=Date.now()}
+      S.market={ticker:'DEPTHFEED-BTC15M-'+slotKey(),status:'active',close_time:inferredEndDate().toISOString(),yes_bid_dollars:yb,yes_ask_dollars:ya,no_bid_dollars:nb,no_ask_dollars:na};
+      const ptb=d?.price_to_beat; const target=N(ptb?.kalshi)??N(ptb?.limitless)??N(ptb?.polymarket)??N(ptb); if(target!=null)S.market.functional_strike=target;
+      S.marketTs=Date.now();S.marketDataTs=sourceTimestamp(book)||S.marketTs;S.orderbook={yes_dollars:dfRows(book.yes),no_dollars:dfRows(book.no)};S.orderTs=Date.now();
+      diagKalshi('DepthFeed /btc15m','200','');S.relayDiag.upstream='DepthFeed';kalshiFailures=0;kalshiNextAllowed=0;
+      $('kdot').className='dot live';$('kstat').textContent='DepthFeed execution live';setDiag('diagMarket','DEPTHFEED LIVE','good');
+      return;
+    }catch(depthErr){
+      if(depthErr?.status===404)depthfeedUnsupported=true;
+      if(kalshiCooldown()>0)throw depthErr;
+      // The deployed Worker currently exposes the standard /kalshi/* routes. Fall back to them.
+      const q='/kalshi/markets?series_ticker=KXBTC15M&status=open&limit=100';
+      const j=await relayJson(q,5000);
+      const arr=Array.isArray(j)?j:(j?.markets||j?.data?.markets||[]);
+      let m=pickMarket(arr);
+      if(!m){
+        // Some API versions use "active" instead of "open"; retry without the status filter.
+        const j2=await relayJson('/kalshi/markets?series_ticker=KXBTC15M&limit=100',5000);
+        const arr2=Array.isArray(j2)?j2:(j2?.markets||j2?.data?.markets||[]);
+        m=pickMarket(arr2);
+      }
+      if(!m)throw Error('No active KXBTC15M market returned by relay');
+      const obJ=await relayJson(`/kalshi/orderbook/${encodeURIComponent(m.ticker)}?depth=10`,5000);
+      const ob=obJ?.orderbook||obJ?.data?.orderbook||obJ?.data||obJ||{};
+      const normRows=side=>Array.isArray(side)?side.map(r=>{
+        const a=Array.isArray(r)?r:[r?.price??r?.yes_price??r?.no_price,r?.count??r?.quantity??r?.size];
+        let px=N(a[0]),qty=N(a[1]); if(px!=null&&px>1)px/=100; return [px,qty];
+      }).filter(r=>r[0]!=null&&r[1]!=null&&r[1]>0):[];
+      const book={yes:normRows(ob.yes||ob.yes_dollars),no:normRows(ob.no||ob.no_dollars)};
+      S.dfMicro=depthMicro(book);
+      const yb=S.dfMicro?.bestY??(N(m.yes_bid_dollars)??(N(m.yes_bid)!=null?N(m.yes_bid)/100:null));
+      const ya=S.dfMicro?.askY??(N(m.yes_ask_dollars)??(N(m.yes_ask)!=null?N(m.yes_ask)/100:null));
+      const nb=S.dfMicro?.bestN??(N(m.no_bid_dollars)??(N(m.no_bid)!=null?N(m.no_bid)/100:null));
+      const na=S.dfMicro?.askN??(N(m.no_ask_dollars)??(N(m.no_ask)!=null?N(m.no_ask)/100:null));
+      const target=marketTarget(m);
+      const reasons=[];
+      if(target==null)reasons.push('external target unavailable');
+      if(S.dfMicro?.crossed)reasons.push('crossed binary book');
+      if(S.dfMicro&&!S.dfMicro.orderedY)reasons.push('YES ladder order invalid');
+      if(S.dfMicro&&!S.dfMicro.orderedN)reasons.push('NO ladder order invalid');
+      if(ya!=null&&na!=null&&Math.abs((ya+na)-1)>.08)reasons.push('ask complement mismatch');
+      S.execValidation={ok:reasons.length===0,identityVerified:target!=null,reasons,dfTarget:target,feedP:S.dfMicro?.mid??null};
+      S.market={...m,yes_bid_dollars:yb,yes_ask_dollars:ya,no_bid_dollars:nb,no_ask_dollars:na};
+      S.marketTs=Date.now();S.marketDataTs=S.marketTs;S.orderbook={yes_dollars:book.yes,no_dollars:book.no};S.orderTs=Date.now();
+      const qsig=[yb,ya,nb,na,S.dfMicro?.imbalance].map(x=>x==null?'':Number(x).toFixed(5)).join('|');
+      if(qsig!==S.quoteSig){S.quoteSig=qsig;S.quoteChangedTs=Date.now()}
+      diagKalshi('/kalshi/markets + /kalshi/orderbook','200',`DepthFeed unavailable; official relay fallback active (${depthErr?.message||'route unavailable'})`);
+      S.relayDiag.upstream='Kalshi relay fallback';kalshiFailures=0;kalshiNextAllowed=0;
+      $('kdot').className='dot live';$('kstat').textContent='Kalshi relay live';setDiag('diagMarket','KALSHI LIVE','good');
+    }
+  }catch(e){
+    kalshiFailures++;
+    if(!kalshiCooldown())kalshiNextAllowed=Date.now()+Math.min(120000,15000*Math.pow(2,Math.min(3,kalshiFailures-1)));
+    diagKalshi('Kalshi relay',e?.status?String(e.status):'error',e?.message||String(e));
+    $('kdot').className='dot';$('kstat').textContent=S.marketTs&&Date.now()-S.marketTs<30000?'Kalshi stale':'Kalshi unavailable';setDiag('diagMarket',e?.message||'UNAVAILABLE','bad');
+  }finally{S._kalshiBusy=false}
+}
+async function fetchOrderbook(){return;}
+function orderImbalance(){return S.dfMicro?.imbalance??null}
+function kalshiSpread(){return S.dfMicro?.spread??(()=>{const b=bidYes(),a=askYes();return b!=null&&a!=null?a-b:null})()}
+function inferredKalshiTickers(){return []}
+
+function connectCoinbase(){
+ try{S.cbws?.close()}catch(e){}
+ let w;try{w=new WebSocket('wss://advanced-trade-ws.coinbase.com')}catch(e){$('cdot').className='dot';$('cstat').textContent='Coinbase REST fallback';return}S.cbws=w;
+ w.onopen=()=>{w.send(JSON.stringify({type:'subscribe',channel:'ticker',product_ids:['BTC-USD']}));w.send(JSON.stringify({type:'subscribe',channel:'heartbeats',product_ids:['BTC-USD']}));$('cdot').className='dot live';$('cstat').textContent='Coinbase live'};
+ w.onmessage=e=>{try{const j=JSON.parse(e.data);for(const ev of j.events||[])for(const t of ev.tickers||[]){const p=N(t.price);if(p){S.px.coinbase=p;S.pxTs.coinbase=Date.now()}const b=N(t.best_bid),a=N(t.best_ask);if(b)S.cbBid=b;if(a)S.cbAsk=a}}catch(_){}};
+ w.onclose=()=>{$('cdot').className='dot';$('cstat').textContent='Coinbase reconnecting';setTimeout(connectCoinbase,1800)};
+}
+function connectKraken(){
+ try{S.krws?.close()}catch(e){}
+ let w;try{w=new WebSocket('wss://ws.kraken.com/v2')}catch(e){$('rdot').className='dot';$('rstat').textContent='Kraken REST fallback';return}S.krws=w;
+ w.onopen=()=>{w.send(JSON.stringify({method:'subscribe',params:{channel:'ticker',symbol:['BTC/USD'],snapshot:true}}));$('rdot').className='dot live';$('rstat').textContent='Kraken live'};
+ w.onmessage=e=>{try{const j=JSON.parse(e.data);if(j.channel==='ticker'&&j.data?.[0]){const t=j.data[0],p=N(t.last);if(p){S.px.kraken=p;S.pxTs.kraken=Date.now()}const b=N(t.bid),a=N(t.ask);if(b)S.krBid=b;if(a)S.krAsk=a}}catch(_){}};
+ w.onclose=()=>{$('rdot').className='dot';$('rstat').textContent='Kraken reconnecting';setTimeout(connectKraken,2200)};
+}
+async function pollRestSpots(){
+ try{const j=await jsonFetch('https://api.exchange.coinbase.com/products/BTC-USD/ticker',2500);const p=N(j.price);if(p){S.px.coinbase=p;S.pxTs.coinbase=Date.now()}}catch(e){}
+ try{const j=await jsonFetch('https://api.kraken.com/0/public/Ticker?pair=XBTUSD',2500);const z=j?.result?Object.values(j.result)[0]:null;const p=N(z?.c?.[0]);if(p){S.px.kraken=p;S.pxTs.kraken=Date.now()}}catch(e){}
+ try{const j=await jsonFetch('https://www.bitstamp.net/api/v2/ticker/btcusd/',2500);const p=N(j.last);if(p){S.px.bitstamp=p;S.pxTs.bitstamp=Date.now()}}catch(e){}
+ try{const j=await jsonFetch('https://api.gemini.com/v1/pubticker/btcusd',2500);const p=N(j.last);if(p){S.px.gemini=p;S.pxTs.gemini=Date.now()}}catch(e){}
+ const n=freshVenueRows().length;
+ if(n) setDiag('diagSpot',`${n} VENUE${n===1?'':'S'} LIVE`,'good'); else setDiag('diagSpot','NO LIVE SPOT','bad');
+}
+const BASE_W={coinbase:.34,kraken:.30,bitstamp:.21,gemini:.15};
+function freshVenueRows(){
+  const now=Date.now(),rows=[];
+  for(const k of Object.keys(S.px)){
+    if(S.px[k]!=null && now-S.pxTs[k]<10000){
+      const age=(now-S.pxTs[k])/1000;
+      rows.push({k,p:S.px[k],age,w:(BASE_W[k]||.1)*Math.exp(-age/12)});
+    }
+  }
+  return rows;
+}
+function freshPrices(){return freshVenueRows().map(x=>x.p)}
+function robustVenueSet(){
+  const rows=freshVenueRows(); if(!rows.length)return [];
+  const med=median(rows.map(x=>x.p));
+  const mad=median(rows.map(x=>Math.abs(x.p-med)))||0;
+  const cutoff=Math.max(8,3*mad);
+  let kept=rows.filter(x=>Math.abs(x.p-med)<=cutoff);
+  if(kept.length<2 && rows.length>=2) kept=rows.sort((a,b)=>Math.abs(a.p-med)-Math.abs(b.p-med)).slice(0,2);
+  return kept;
+}
+function proxy(){
+  const rows=robustVenueSet(); if(!rows.length)return null;
+  const sw=rows.reduce((s,x)=>s+x.w,0);
+  return sw>0?rows.reduce((s,x)=>s+x.p*x.w,0)/sw:median(rows.map(x=>x.p));
+}
+function dispersion(){
+  const rows=robustVenueSet(),m=median(rows.map(x=>x.p));if(rows.length<2||m==null)return null;
+  return median(rows.map(x=>Math.abs(x.p-m)));
+}
+
+function rhNormalizedP(){return normalizedMarketP()}
+function recentBasisSamples(){const now=Date.now();return S.rhSnaps.filter(x=>Number.isFinite(x.basis)&&now-x.ts<30*60*1000)}
+function basisEstimate(){
+ const a=recentBasisSamples();if(!a.length)return {basis:0,n:0,age:null,weight:0};
+ const now=Date.now(),vals=a.map(x=>x.basis),med=median(vals),kept=a.filter(x=>Math.abs(x.basis-med)<=Math.max(12,3*(median(vals.map(v=>Math.abs(v-med)))||0)));
+ let sw=0,sb=0;for(const x of kept){const age=(now-x.ts)/1000,w=Math.exp(-age/300);sw+=w;sb+=w*x.basis}
+ const latest=Math.max(...kept.map(x=>x.ts));const n=kept.length,b=sw?sb/sw:med;const age=(now-latest)/1000;
+ const freshness=Math.exp(-age/180),sampleConf=clamp(n/3,0,1);return {basis:clamp(b,-35,35),n,age,weight:freshness*sampleConf};
+}
+function modelProxy(){const p=proxy();if(p==null)return null;const b=basisEstimate();return p+b.basis*b.weight}
+async function backfillSettlementSeconds(force=false){
+  const e=endDate(S.market); if(!e)return;
+  const now=Date.now(), start=e.getTime()-60000, stop=Math.min(now,e.getTime());
+  if(stop<=start||(!force&&now-S.backfillTs<2500)||S.backfillBusy)return;
+  S.backfillBusy=true; S.backfillTs=now;
+  try{
+    const j=await relayJson(`/depthfeed/btcspot?from=${Math.floor(start)}&to=${Math.floor(stop)}`,5000);
+    const rows=Array.isArray(j?.data)?j.data:(Array.isArray(j)?j:[]);
+    const map=new Map(S.sec.map(x=>[x.sec,x]));
+    for(const r of rows){
+      const ms=Number(r?.second_ms??r?.exch_ts_ms??r?.recv_ts_ms??r?.id) || Date.parse(r?.time||r?.timestamp||'');
+      const px=N(r?.price??r?.close??r?.mid??r?.last);
+      if(Number.isFinite(ms)&&px!=null){const sec=Math.floor(ms/1000); if(sec>=Math.floor(start/1000)&&sec<Math.floor(stop/1000)+1)map.set(sec,{sec,p:px,src:'depthfeed-backfill'})}
+    }
+    S.sec=[...map.values()].sort((a,b)=>a.sec-b.sec);
+    const cutoff=Math.floor(Date.now()/1000)-1200; while(S.sec.length&&S.sec[0].sec<cutoff)S.sec.shift();
+  }catch(e){} finally{S.backfillBusy=false}
+}
+
+function sampleSecond(){
+ const sk=slotKey();
+ if(S.activeSlot!==sk){
+   S.activeSlot=sk;S.settle=[];S.pHist=[];S.candidate=null;S.shockDir=null;
+   S.rhContractConfirmed=false;if($('rhContractConfirm'))$('rhContractConfirm').checked=false;resetExecutionLock();
+   // Preserve a valid Robinhood override across slot metadata changes.
+   // The user can replace or clear it explicitly; the model should never ignore a visible target field.
+ }
+ const p=modelProxy();if(p==null)return;
+ const sec=Math.floor(Date.now()/1000),last=S.sec.at(-1);
+ if(!last||last.sec!==sec)S.sec.push({sec,p});else last.p=p;
+ while(S.sec.length&&S.sec[0].sec<sec-1200)S.sec.shift();
+ const e=endDate(S.market);if(e&&Date.now()>=e.getTime()-60000&&Date.now()<e.getTime()){
+   const sl=S.settle.at(-1);if(!sl||sl.sec!==sec)S.settle.push({sec,p});else sl.p=p;
+   if(S.settle.length>60)S.settle.shift();
+ }
+}
+function ago(sec){const q=Math.floor(Date.now()/1000)-sec;let z=null;for(const x of S.sec){if(x.sec<=q)z=x;else break}return z?.p??null}
+function mom(sec){const a=ago(sec),p=proxy();return a==null||p==null?null:p-a}
+function realizedSigma(win=120){
+ const q=Math.floor(Date.now()/1000)-win,a=S.sec.filter(x=>x.sec>=q);if(a.length<10)return null;
+ const d=[];for(let i=1;i<a.length;i++)d.push(a[i].p-a[i-1].p);
+ return stdev(d)
+}
+function sigmaBlend(){
+ const s20=realizedSigma(20),s60=realizedSigma(60),s180=realizedSigma(180),s600=realizedSigma(600);
+ const vals=[s20,s60,s180,s600].filter(Number.isFinite);
+ if(!vals.length)return 1.5;
+ const base=(.34*(s20??median(vals))+.31*(s60??median(vals))+.22*(s180??median(vals))+.13*(s600??median(vals)));
+ // Give expanding short-term volatility immediate weight, but do not let one burst dominate forever.
+ const accel=(s20!=null&&s180!=null)?clamp(s20/Math.max(.25,s180),.65,2.2):1;
+ return Math.max(.35,base*(.85+.15*accel));
+}
+function volRegime(){
+ const s20=realizedSigma(20),s180=realizedSigma(180);
+ if(s20==null||s180==null)return 'building';
+ const r=s20/Math.max(.2,s180);return r>1.8?'shock':r>1.25?'expanding':r<.7?'quiet':'normal';
+}
+function trendDiagnostics(){
+ const m15=mom(15),m30=mom(30),m60=mom(60),m120=mom(120),m180=mom(180);
+ const vals=[m15,m30,m60].filter(Number.isFinite);
+ if(vals.length<2)return {score:0,meanRev:0,rawPerSec:0};
+ const signs=vals.map(x=>Math.sign(x));
+ const same=signs.every(s=>s===signs[0]&&s!==0);
+ const short=(.5*(m15||0)/15+.3*(m30||0)/30+.2*(m60||0)/60);
+ const long=(.6*(m120||0)/120+.4*(m180||0)/180);
+ // Persistence is high only when several horizons agree and the longer horizon confirms direction.
+ let score=same?.55:.15;
+ if(m120!=null&&Math.sign(m120)===Math.sign(short)&&Math.sign(short)!==0)score+=.22;
+ if(m180!=null&&Math.sign(m180)===Math.sign(short)&&Math.sign(short)!==0)score+=.13;
+ const mag=Math.min(1,Math.abs(short)/(Math.max(.4,sigmaBlend())*.18));
+ score=clamp(score+.10*mag,0,1);
+ // Mean-reversion warning when short momentum runs against the 2–3 minute move.
+ let meanRev=0;
+ if(long!==0&&short!==0&&Math.sign(long)!==Math.sign(short))meanRev=.55;
+ if(m120!=null&&m60!=null&&Math.sign(m120)!==Math.sign(m60))meanRev=Math.max(meanRev,.35);
+ return {score,meanRev,rawPerSec:short,longPerSec:long};
+}
+function timeDecayMomentum(leftSec){
+ const td=trendDiagnostics(),s=sigmaBlend();
+ // Very short-term momentum should have little ability to project 10+ minutes.
+ // Decay ramps up only as the settlement window approaches.
+ const horizonWeight=leftSec>600?.08:leftSec>420?.12:leftSec>300?.18:leftSec>180?.28:leftSec>120?.40:leftSec>60?.58:.78;
+ const persistence=.30+.70*td.score;
+ const reversionPenalty=1-.75*td.meanRev;
+ let d=td.rawPerSec*horizonWeight*persistence*reversionPenalty;
+ // Cap drift much more tightly than V9.2.
+ const capFrac=leftSec>300?.055:leftSec>120?.085:leftSec>60?.12:.18;
+ d=clamp(d,-capFrac*s,capFrac*s);
+ return {drift:d,persistence:td.score,meanRev:td.meanRev,horizonWeight};
+}
+function probabilityCap(leftSec,persistence,phase){
+ if(phase==='FINAL 60s averaging'){
+   if(leftSec<=15)return .995;
+   if(leftSec<=30)return .985;
+   return .97;
+ }
+ // Early contract predictions are deliberately prevented from reaching extreme confidence.
+ let cap=leftSec>600?.70:leftSec>420?.74:leftSec>300?.79:leftSec>180?.84:leftSec>120?.88:leftSec>60?.92:.95;
+ // Exception: persistent trends can earn a modestly higher ceiling, never a huge jump.
+ cap+=.025*clamp((persistence-.65)/.35,0,1);
+ return clamp(cap,.67,.965);
+}
+function finalWindowObserved(){
+ const e=endDate(S.market);if(!e)return {obs:[],elapsed:0,missingPast:0,startSec:null,endSec:null};
+ const endSec=Math.floor(e.getTime()/1000),startSec=endSec-60,nowSec=Math.min(endSec,Math.floor(Date.now()/1000));
+ const elapsed=clamp(nowSec-startSec,0,60);
+ const bySec=new Map();for(const x of S.sec)if(x.sec>=startSec&&x.sec<nowSec&&Number.isFinite(x.p))bySec.set(x.sec,x.p);
+ const obs=[...bySec.entries()].sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+ return {obs,elapsed,missingPast:Math.max(0,elapsed-obs.length),startSec,endSec};
+}
+function settlementModel(){
+ const t=activeTarget(),p=modelProxy(),l=left();if(t==null||p==null||l==null)return null;
+ const s=sigmaBlend(),md=timeDecayMomentum(l),dr=md.drift,disp=dispersion()||0;
+ const venueN=robustVenueSet().length;
+ const basisUnc=Math.max(1.25,disp*1.55,(venueN<2?6:0),(venueN===2?2.5:0));
+ let exp,sd,phase,req=null,obsAvg=null,driftImpact=0;
+ if(l>60){
+   const h=l-60;
+   // Drift contribution is intentionally limited to a shorter effective horizon.
+   const effectiveDriftHorizon=Math.min(h+30,Math.max(45,180*(.35+.65*md.persistence)));
+   driftImpact=dr*effectiveDriftHorizon;
+   exp=p+driftImpact;
+   // Multi-horizon volatility + mild horizon inflation to avoid false precision.
+   const processVar=s*s*(h+28)*1.12;
+   sd=Math.sqrt(processVar+basisUnc*basisUnc);
+   phase='pre-settlement';
+ }else{
+   // V10.9: treat every observed second in the final BRTI window as locked evidence.
+   // Rebuild from the 1-second history so a render/reset cannot lose already observed seconds.
+   const fw=finalWindowObserved(),obs=fw.obs,n=obs.length,sum=obs.reduce((a,b)=>a+b,0);
+   const future=Math.max(0,60-fw.elapsed),missing=fw.missingPast,unknown=future+missing;
+   obsAvg=n?sum/n:null;
+   // Missing past seconds (e.g. page reload) are not falsely treated as known; estimate them at current level with extra uncertainty.
+   const missingMean=missing*p;
+   const knownPlusMissing=sum+missingMean;
+   if(future>0)req=(t*60-knownPlusMissing)/future;
+   else req=null;
+   const futureSumMean=future*p+dr*future*(future+1)/2;
+   driftImpact=(dr*future*(future+1)/2)/60;
+   exp=(knownPlusMissing+futureSumMean)/60;
+   // Sum of correlated future random-walk levels: sigma^2 * r(r+1)(2r+1)/6.
+   const rwVar=s*s*future*(future+1)*(2*future+1)/6;
+   const missingVar=missing*Math.pow(Math.max(s*2,basisUnc),2);
+   const processVar=(rwVar+missingVar)/(60*60);
+   // Basis uncertainty also collapses as more of the official averaging window is observed.
+   const basisVar=Math.pow(basisUnc*(unknown/60),2);
+   sd=Math.sqrt(Math.max(.18,processVar+basisVar));
+   phase='FINAL 60s averaging';
+   // expose elapsed/locked state below
+   var settleElapsed=fw.elapsed, settleMissing=missing;
+ }
+ let raw=normcdf((exp-t)/Math.max(.65,sd));
+ const cap=probabilityCap(l,md.persistence,phase);
+ raw=clamp(raw,1-cap,cap);
+ return {raw,exp,sd,basisUnc,phase,req,obsAvg,n:(phase==='FINAL 60s averaging'?(typeof settleElapsed==='number'?settleElapsed:0):S.settle.length),observedN:(phase==='FINAL 60s averaging'?finalWindowObserved().obs.length:S.settle.length),missingPast:(phase==='FINAL 60s averaging'?(typeof settleMissing==='number'?settleMissing:0):0),cap,driftImpact,persistence:md.persistence,meanRev:md.meanRev,sigmaBlend:s};
+}
+function calibrationStats(){
+ const r=S.logs.filter(x=>x.outcome===0||x.outcome===1);
+ if(!r.length)return {n:0,brier:null,slope:1};
+ const b=mean(r.map(x=>(x.p-x.outcome)**2));
+ // Conservative calibration: if realized Brier is poor, shrink logit toward 50%.
+ const baseline=.25,skill=clamp((baseline-b)/.15,0,1);
+ return {n:r.length,brier:b,slope:.55+.45*skill};
+}
+function calibrate(p){
+ const c=calibrationStats();if(p==null)return null;
+ const logit=Math.log(clamp(p,.01,.99)/(1-clamp(p,.01,.99)));
+ return 1/(1+Math.exp(-logit*c.slope));
+}
+function pRange(){
+ const now=Date.now();while(S.pHist.length&&S.pHist[0].t<now-30000)S.pHist.shift();
+ if(!S.pHist.length)return 0;const a=S.pHist.map(x=>x.p);return Math.max(...a)-Math.min(...a)
+}
+function pAt(secAgo){const q=Date.now()-secAgo*1000;let z=null;for(const x of S.pHist){if(x.t<=q)z=x;else break}return z?.p??null}
+function distanceOnlyProbability(sm,t,p){if(!sm||t==null||p==null)return null;return clamp(normcdf((p-t)/Math.max(.65,sm.sd)),1-sm.cap,sm.cap)}
+function shockState(dist,l){
+ const a=mom(15),b=mom(30),c=mom(60),s=Math.max(1,realizedSigma(60)||1.5);
+ let dir=null;if(l!=null&&l<=C.shockWindow&&a!=null&&b!=null){
+   const score=.5*a+.3*b+.2*(c||0),thr=Math.max(9,s*.65*Math.sqrt(60));
+   if(score>thr&&a>0&&b>0&&dist>=0)dir='UP';
+   if(score<-thr&&a<0&&b<0&&dist<=0)dir='DOWN';
+ }
+ if(dir){S.shockDir=dir;S.shockTs=Date.now()}
+ else if(S.shockTs&&Date.now()-S.shockTs>C.shockHold*1000){S.shockDir=null;S.shockTs=0}
+ return S.shockDir;
+}
+
+function currentPolySlug(){
+ const start=Math.floor(Date.now()/900000)*900;
+ return `btc-updown-15m-${start}`;
+}
+async function fetchPoly(){
+ const slug=currentPolySlug();const urls=[`https://gamma-api.polymarket.com/events/slug/${slug}`,`https://gamma-api.polymarket.com/markets?slug=${slug}`];
+ for(const u of urls)try{
+   const j=await jsonFetch(u,3000);
+   let m=null;
+   if(Array.isArray(j))m=j[0];else if(j?.markets)m=j.markets[0];else m=j;
+   if(m){
+     let outs=m.outcomes,prices=m.outcomePrices;
+     if(typeof outs==='string')try{outs=JSON.parse(outs)}catch(e){}
+     if(typeof prices==='string')try{prices=JSON.parse(prices)}catch(e){}
+     if(Array.isArray(outs)&&Array.isArray(prices)){
+       const i=outs.findIndex(x=>/up|yes/i.test(String(x)));const p=N(prices[i>=0?i:0]);
+       if(p!=null){S.poly=p;S.polyTs=Date.now();S.polySlug=slug;$('pdot').className='dot live';$('pstat').textContent='Polymarket live';return}
+     }
+   }
+ }catch(e){}
+ $('pdot').className='dot';$('pstat').textContent='Polymarket unavailable';
+}
+function resilience(sm,l){
+  const rows=freshVenueRows(), n=robustVenueSet().length;
+  const ages=rows.map(x=>x.age), maxAge=ages.length?Math.max(...ages):99;
+  const d=dispersion()||0, vr=volRegime(), polyFresh=Date.now()-S.polyTs<10000, kalFresh=Date.now()-S.marketTs<7000;
+  let penalty=0;
+  if(n<4) penalty+=(4-n)*.035;
+  penalty+=clamp(maxAge/10,0,1)*.035;
+  penalty+=clamp(d/25,0,1)*.055;
+  if(vr==='expanding')penalty+=.025;if(vr==='shock')penalty+=.06;
+  if(!polyFresh)penalty+=.015;if(!kalFresh)penalty+=.025;
+  if(S.sec.length<60)penalty+=.025*(1-S.sec.length/60);
+  if(sm&&sm.meanRev>.3)penalty+=.02;
+  if(sm?.phase==='FINAL 60s averaging'){
+    const locked=clamp((sm.n||0)/60,0,1);
+    // Locked settlement observations are direct evidence; do not over-shrink them toward 50%.
+    penalty*=1-.72*locked;
+  }
+  penalty=clamp(penalty,0,.28);
+  return {penalty,confidence:1-penalty};
+}
+function resilientProbability(cal,sm,l){
+  if(cal==null)return null; const r=resilience(sm,l);
+  return .5+(cal-.5)*r.confidence;
+}
+function normalizedDistance(t,p,sm,l){
+  if(t==null||p==null||!sm)return null;
+  const horizon=Math.max(1,(l||0)-60);
+  const scale=Math.sqrt(sm.sigmaBlend*sm.sigmaBlend*Math.max(1,horizon)+sm.basisUnc*sm.basisUnc);
+  return (p-t)/Math.max(1,scale);
+}
+
+function logitScale(p,s){if(p==null)return null;const q=clamp(p,.01,.99),z=Math.log(q/(1-q));return 1/(1+Math.exp(-z*s))}
+function lateCalibrationPrior(l){
+ if(l==null)return 1;
+ if(l<=60)return 1.24;
+ if(l<=120)return 1.17;
+ if(l<=180)return 1.11;
+ if(l<=300)return 1.06;
+ return 1.00;
+}
+function calibrationBucket(l){if(l==null)return [0,999];if(l<=60)return [0,60];if(l<=120)return [60,120];if(l<=180)return [120,180];if(l<=300)return [180,300];return [300,900]}
+function empiricalCalibrationScale(l){
+ const [a,b]=calibrationBucket(l), rows=S.logs.filter(x=>(x.outcome===0||x.outcome===1)&&Number.isFinite(x.p)&&x.left>=a&&x.left<b);
+ const contracts=new Set(rows.map(x=>x.ticker)).size;
+ if(contracts<5)return {scale:1,n:contracts,active:false};
+ let best=1,bestLoss=Infinity;
+ for(let s=.75;s<=1.55;s+=.025){let loss=0;for(const x of rows){const p=logitScale(x.p,s);loss+=(p-x.outcome)**2}loss/=rows.length;if(loss<bestLoss){bestLoss=loss;best=s}}
+ const w=clamp((contracts-4)/20,0,.6);return {scale:1+(best-1)*w,n:contracts,active:true};
+}
+function decisionProbability(base,l,kp,dist){
+ if(base==null)return null; const dir=base>=.5?1:-1; let support=0;
+ if(kp!=null&&Math.sign(kp-.5)===dir&&Math.abs(kp-.5)>.025)support++;
+ if(dist!=null&&Math.sign(dist)===dir&&Math.abs(dist)>1)support++;
+ const m30=mom(30);if(m30!=null&&Math.sign(m30)===dir&&Math.abs(m30)>1.5)support++;
+ let prior=lateCalibrationPrior(l);if(support<2)prior=1+(prior-1)*(support===1?.35:0);
+ const emp=empiricalCalibrationScale(l);let scale=prior*emp.scale;
+ scale=clamp(scale,.82,1.45);return logitScale(base,scale);
+}
+function trendState(){
+ const a=mom(15),b=mom(30),c=mom(60);if(a==null&&b==null&&c==null)return {label:'Building',score:0,side:null};
+ const s=.5*(a||0)+.3*(b||0)+.2*(c||0);const sig=Math.max(1,realizedSigma(60)||1.5)*Math.sqrt(30);
+ if(s>Math.max(3,.25*sig))return {label:'UP',score:s,side:'UP'};if(s<-Math.max(3,.25*sig))return {label:'DOWN',score:s,side:'DOWN'};return {label:'FLAT',score:s,side:null};
+}
+function entryDecision(dp,l,q,execQ,ya,na,req,kp,dist,sm){
+ const tr=trendState(),tc=targetComparison(),book=(!overrideIsCurrent()||tc.comparable)?S.dfMicro?.imbalance:null;
+ const ms=modelSideState(dp),modelSide=ms.side,modelConf=ms.conf;
+ const side=S.execSide;
+ const fair=(dp==null||!side)?null:(side==='UP'?dp:1-dp);
+ const ask=rhManualAsk();
+ const edge=fair!=null&&ask!=null?fair-ask:null;
+ const supports=[];
+ if(side){if(tr.side===side)supports.push('trend');if(dist!=null&&((side==='UP'&&dist>0)||(side==='DOWN'&&dist<0)))supports.push('target');if(kp!=null&&((side==='UP'&&kp>.5)||(side==='DOWN'&&kp<.5)))supports.push('market');if(book!=null&&((side==='UP'&&book>.05)||(side==='DOWN'&&book<-.05)))supports.push('book')}
+ let action='WAIT',why='Waiting for a stable execution side.';
+ const dataOK=q>=C.minQuality&&execQ>=70,timeOK=l!=null&&l>C.noEntry,targetReady=overrideIsCurrent(),verified=S.rhContractConfirmed===true,priceOK=rhPriceFresh();
+ const modelSupportsLock=side&&modelSide===side&&modelConf!=null&&modelConf>=C.sideMinConf&&!S.sideFlipBlocked;
+
+ if(S.sideFlipBlocked){
+   why=`SIDE CHANGED — CANCEL ENTRY. Previous ${S.sideFlipFrom}; model is now ${modelSide||'neutral'}. Waiting ${C.sideLockSec}s for a stable new side.`;
+ }else if(!side){
+   const remain=S.execSideCandidateTs?Math.max(0,C.sideLockSec-(Date.now()-S.execSideCandidateTs)/1000):C.sideLockSec;
+   action=S.execSideCandidate?'WATCH '+S.execSideCandidate:'WAIT';
+   why=S.execSideCandidate?`Locking ${S.execSideCandidate}: ${remain.toFixed(1)}s stability remaining.`:'WAIT: model confidence must reach 55% before an execution side can lock.';
+ }else if(!modelSupportsLock){
+   why=`WAIT: ${side} remains locked for safety, but the current model no longer supports a ${side} entry.`;
+ }else if(fair==null)why='WAIT: model fair value is unavailable.';
+ else if(!dataOK)why=`WAIT: model quality ${q}/100, external execution quality ${execQ}/100.`;
+ else if(!timeOK)why=`WAIT: final ${C.noEntry}s entry lock.`;
+ else if(!targetReady){action='WATCH '+side;why='Enter the exact Robinhood target for this 15-minute window.';}
+ else if(!verified){action='WATCH '+side;why='Verify the Robinhood 15-minute window/end time before using its price.';}
+ else if(!priceOK){action='WATCH '+side;why=`Enter the current Robinhood ${side} price. This box is locked to ${side}.`;}
+ else if(edge>=req&&supports.length>=2&&fair>=.56){action='ENTER '+side;why=`${side} has ${(edge*100).toFixed(1)} pts of edge after the manually entered Robinhood price, confirmed by ${supports.join(' + ')}.`}
+ else if(edge>=Math.max(.025,req*.55)&&supports.length>=1){action='WATCH '+side;why=`${side} is close: ${(edge*100).toFixed(1)} pts edge vs ${(req*100).toFixed(1)} required; confirmation: ${supports.join(' + ')||'limited'}.`}
+ else why=`WAIT: Robinhood ${side} edge ${edge==null?'—':(edge*100).toFixed(1)+' pts'} vs ${(req*100).toFixed(1)} required${supports.length?`; support ${supports.join(' + ')}`:''}.`;
+ return {action,side,edge,ask,fair,supports,tr,why,modelSide,modelConf};
+}
+
+function checkpointBand(l){for(const cp of [600,300,180,120,60,30])if(l!=null&&l<=cp&&l>cp-12)return cp;return null}
+function autoCheckpoint(z,dp,dec){
+ const cp=checkpointBand(z.l);if(!cp||z.t==null||dp==null)return;const id=z.m?.ticker||currentContractId(),key=id+'|'+cp;if(S.checkpointSeen[key])return;S.checkpointSeen[key]=1;
+ const row={ts:Date.now(),ticker:id,checkpoint:cp,left:z.l,target:z.t,proxy:z.ap,decisionP:dp,modelP:z.cal,marketP:z.kp,yesAsk:z.ya,noAsk:z.na,trend:dec.tr.label,volRegime:volRegime(),sigmaBlend:z.sm?.sigmaBlend??null,zDistance:normalizedDistance(z.t,z.ap,z.sm,z.l),bookImbalance:S.dfMicro?.imbalance??null,action:dec.action,outcome:null,outcomeSource:null};
+ S.autoSnaps.push(row);if(S.autoSnaps.length>1500)S.autoSnaps=S.autoSnaps.slice(-1500);localStorage.setItem('v105AutoSnaps',JSON.stringify(S.autoSnaps));
+}
+function applyOfficialOutcome(ticker,out,source='kalshi'){let n=0;for(const arr of [S.logs,S.rhSnaps,S.autoSnaps])for(const x of arr)if(x.ticker===ticker&&x.outcome==null){x.outcome=out;x.outcomeSource=source;n++}if(n){localStorage.setItem('v9ShadowLogs',JSON.stringify(S.logs));localStorage.setItem('v96RhSnaps',JSON.stringify(S.rhSnaps));localStorage.setItem('v105AutoSnaps',JSON.stringify(S.autoSnaps));updateLogStats()}return n}
+async function pollOfficialSettlements(){
+ if(Date.now()-S.lastResolutionPoll<25000)return;S.lastResolutionPoll=Date.now();
+ const unresolved=[...new Set(S.autoSnaps.filter(x=>x.outcome==null&&String(x.ticker).startsWith('KX')).map(x=>x.ticker))];if(!unresolved.length){$('autoStatus').textContent=`AUTO LOG ON • ${new Set(S.autoSnaps.filter(x=>x.outcome===0||x.outcome===1).map(x=>x.ticker)).size} resolved`;return}
+ let got=0;try{const j=await relayJson('/kalshi/settlements?limit=50',4500),arr=j?.markets||[];for(const m of arr){const r=String(m?.result||'').toLowerCase();if((r==='yes'||r==='no')&&unresolved.includes(m.ticker))got+=applyOfficialOutcome(m.ticker,r==='yes'?1:0,'kalshi-official')}}catch(e){for(const t of unresolved.slice(0,3))queueResolve(t)}
+ $('autoStatus').textContent=`AUTO LOG ON • official settlements ${got?'updated':'polling'}`;
+}
+
+function modelQuality(sm){
+ let q=0;
+ const n=robustVenueSet().length; q+=Math.min(48,n*12);
+ if(S.sec.length>=60)q+=18;else q+=18*S.sec.length/60;
+ const d=dispersion(); if(d!=null)q+=d<3?12:d<7?10:d<15?6:2;
+ if(activeTarget()!=null)q+=14;
+ if(sm&&sm.basisUnc<8)q+=8;
+ return Math.round(clamp(q,0,100));
+}
+function executionFreshness(){
+ const age=Date.now()-S.marketTs,changeAge=Date.now()-S.quoteChangedTs,dataAge=S.marketDataTs?Date.now()-S.marketDataTs:null;
+ const transportFresh=S.marketTs>0&&age<6500;
+ // A live transport is authoritative even if the quote itself has not changed.
+ // If the upstream book exposes its own timestamp, reject an old snapshot explicitly.
+ const upstreamFresh=dataAge==null||dataAge<15000;
+ const quoteUsable=askYes()!=null&&askNo()!=null;
+ const validated=S.execValidation?.ok===true;
+ return {age,changeAge,dataAge,transportFresh,quoteLive:transportFresh&&upstreamFresh,quoteUsable,validated,fresh:transportFresh&&upstreamFresh&&quoteUsable&&validated};
+}
+function executionQuality(){
+ let q=0;const f=executionFreshness();
+ const orderFresh=Date.now()-S.orderTs<10000;
+ if(f.transportFresh)q+=35;
+ if(f.quoteLive)q+=25;else if(f.transportFresh)q+=10;
+ if(orderFresh)q+=20;
+ if(f.fresh&&askYes()!=null&&askNo()!=null)q+=10;
+ if(Date.now()-S.polyTs<10000)q+=10;
+ if(S.execValidation && !S.execValidation.ok) q=Math.min(q,35);
+ return Math.round(clamp(q,0,100));
+}
+function quality(sm){
+ let q=0;
+ const kal=Date.now()-S.marketTs<7000;
+ if(kal)q+=22;
+ const fp=robustVenueSet().length;q+=Math.min(36,fp*12);
+ if(S.sec.length>=45)q+=14;else q+=14*S.sec.length/45;
+ const d=dispersion();if(d!=null)q+=d<3?10:d<7?8:d<15?4:0;
+ if(overrideIsCurrent())q+=10;else if(marketTarget(S.market)!=null)q+=6;
+ if(Date.now()-S.orderTs<10000)q+=4;
+ if(Date.now()-S.polyTs<10000)q+=5;
+ if(sm&&sm.basisUnc<8)q+=3;
+ return Math.round(clamp(q,0,100));
+}
+function requiredEdge(q,l,spread,sm){
+ let e=C.baseEdge;
+ e+=(100-q)/100*.045;
+ e+=Math.min(.035,(spread||0)*.45);
+ if(volRegime()==='shock')e+=.025;else if(volRegime()==='expanding')e+=.012;
+ if(l<180)e+=.008;if(l<90)e+=.008;if(l<60)e+=.010;
+ if(sm)e+=Math.min(.02,sm.basisUnc/500);
+ return clamp(e,.05,.16);
+}
+function externalDisagreement(kp){
+ if(kp==null||S.poly==null||Date.now()-S.polyTs>10000)return null;
+ return Math.abs(kp-S.poly);
+}
+function hasFiniteExec(p,ya,na){return p!=null&&ya!=null&&na!=null}
+
+
+// V12 actionable overlay: price/value decision separate from direction.
+function v12ExecutionRegime(sec){if(sec==null)return {name:'UNKNOWN',pad:.12};if(sec<=60)return {name:'TERMINAL <60s',pad:.10};if(sec<=120)return {name:'TERMINAL 60–120s',pad:.085};if(sec<=300)return {name:'LATE 2–5m',pad:.075};return {name:'EARLY >5m',pad:.065};}
+function renderV12Action(dec, decisionP, rhAsk, rhFresh, rhVerified, contractOK, l){
+  const el=id=>document.getElementById(id); if(!el('v12State'))return;
+  const side=S.execSide||((decisionP??.5)>=.5?'UP':'DOWN');
+  const pRaw=decisionP==null?null:(side==='UP'?decisionP:1-decisionP);
+  const reg=v12ExecutionRegime(l);
+  // Require margin for model error + click/quote latency. Existing dec.fair remains calibrated fair value when available.
+  const fair=(dec&&dec.fair!=null)?dec.fair:pRaw; const maxBuy=fair==null?null:Math.max(0,Math.min(.99,fair-reg.pad));
+  const px=(rhAsk!=null&&isFinite(rhAsk))?rhAsk:null; const edge=(fair!=null&&px!=null)?fair-px:null;
+  let state='WATCH',why='Waiting for a verified live Robinhood quote.';
+  if(!contractOK){state='PASS';why='External confirmation unavailable — legacy execution disabled.';}
+  else if(!rhVerified||!rhFresh||px==null){state='WATCH';why='Verify the current Robinhood target/window and refresh its live price.';}
+  else if(S.sideFlipBlocked){state='PASS';why='Execution side changed — cancel the old workflow and wait for a new stable lock.';}
+  else if(false&&maxBuy!=null&&px<=maxBuy){state='BET '+side;why=`Positive execution-adjusted value: ${(edge*100).toFixed(1)}¢ raw edge; ${(reg.pad*100).toFixed(1)}¢ safety margin.`;}
+  else {state='PASS';why=`${side} may be likely, but the contract is too expensive at ${(px*100).toFixed(1)}¢.`;}
+  // Flight recorder: target entry arms 10s snapshots + immediate state changes.
+  recordFlight(state,side,decisionP,fair,maxBuy,px,l);
+  // Trigger book: only BET states become simulated entry observations.
+  if(state.startsWith('BET')&&side)recordAutoTrigger(side,decisionP,fair,maxBuy,px,l);
+  // Once a slot rolls, resolve prior rows from that slot's final 60s proxy average.
+  // Provisional proxy settlement intentionally disabled for new research signals.
+  el('v12State').textContent=state;el('v12State').className='state '+(state.startsWith('BET')?'bet':state==='PASS'?'pass':'watch');
+  el('v12Reason').textContent=why;el('v12Pwin').textContent=pRaw==null?'—':(pRaw*100).toFixed(1)+'%';el('v12MaxBuy').textContent=maxBuy==null?'—':(maxBuy*100).toFixed(1)+'¢';el('v12Current').textContent=px==null?'—':(px*100).toFixed(1)+'¢';el('v12Regime').textContent=reg.name+' • execution margin '+(reg.pad*100).toFixed(1)+'¢';
+}
+// Research visualization: spot chart and conditional BTC invalidation are NOT contract-price quotes.
+// Hidden V13.8 price-action research engine. These correlated indicators are a
+// conservative setup filter, not an independent or calibrated win probability.
+function hiddenPriceAction(side){
+ const a=S.sec.filter(x=>x&&Number.isFinite(x.p)&&Number.isFinite(x.sec)).slice(-900);
+ if(a.length<180)return {ready:false,reason:'Warming up: need at least 3 minutes of observations'};
+ const now=a[a.length-1].sec;
+ const recent=a.filter(x=>x.sec>=now-300);
+ if(recent.length<180||now-recent[0].sec<175)return {ready:false,reason:'Insufficient continuous recent BTC history'};
+ const prices=recent.map(x=>x.p),last=prices[prices.length-1];
+ const ema=(period)=>{let v=prices[0],alpha=2/(period+1);for(const p of prices.slice(1))v=alpha*p+(1-alpha)*v;return v;};
+ const e30=ema(30),e90=ema(90),e180=ema(180);
+ const delta=prices.slice(1).map((p,i)=>p-prices[i]);
+ const net=last-prices[0],travel=delta.reduce((z,v)=>z+Math.abs(v),0);
+ const efficiency=travel>0?Math.abs(net)/travel:0;
+ const volFast=stdev(delta.slice(-30)),volSlow=stdev(delta.slice(-150));
+ if(!Number.isFinite(volFast)||!Number.isFinite(volSlow)||volSlow<=0)return {ready:false,reason:'Volatility estimate unavailable'};
+ const volRatio=volFast/volSlow,dir=side==='UP'?1:-1;
+ const trend=dir*(e30-e90)>0&&dir*(e90-e180)>0;
+ const slope=dir*(e30-prices[Math.max(0,prices.length-31)])>0;
+ const high=Math.max(...prices.slice(-150,-15)),low=Math.min(...prices.slice(-150,-15));
+ const range=Math.max(1,high-low);
+ const nearOpposingLevel=side==='UP'?(high-last>=0&&high-last<.12*range):(last-low>=0&&last-low<.12*range);
+ const extended=Math.abs(last-e30)>Math.max(12,volSlow*12);
+ const shock=volRatio>2.5;
+ const direction=trend&&slope&&efficiency>.08;
+ const reason=shock?'Volatility shock':!direction?'Trend not confirmed':nearOpposingLevel?'Near opposing price level':extended?'Move extended; avoid chasing':'Trend and volatility aligned';
+ return {ready:true,qualified:direction&&!shock&&!nearOpposingLevel&&!extended,reason,volRatio,efficiency,trend,nearOpposingLevel};
+}
+const chartMemory={slot:null,side:null,extreme:null,stop:null,invalidated:false,reason:'',invalidatedAt:0,rearmSince:0,generation:0,initial:null,lastCeiling:null,lastAt:0,previousInputs:null,history:[]};
+function updateQuantChart(dp,l,q,ceiling,validTarget){
+ const canvas=$('quantChart'),ctx=canvas?.getContext('2d');if(!ctx)return;
+ const width=Math.max(260,Math.round(canvas.getBoundingClientRect().width||340)),height=230,dpr=Math.min(2,window.devicePixelRatio||1);
+ if(canvas.width!==Math.round(width*dpr)||canvas.height!==Math.round(height*dpr)){canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr)}
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
+ const now=Date.now(),slot=slotKey(),side=dp==null?null:(dp>=.5?'UP':'DOWN'),target=overrideIsCurrent()?S.targetOverride:null;
+ const identity=slot+'|'+String(target)+'|'+String(side);
+ if(chartMemory.slot!==identity){Object.assign(chartMemory,{slot:identity,side,extreme:null,stop:null,invalidated:false,reason:'',invalidatedAt:0,rearmSince:0,generation:0,initial:null,lastCeiling:null,lastAt:0,previousInputs:null,history:[]});}
+ const points=S.sec.filter(x=>x&&Number.isFinite(x.p)&&x.sec>=Math.floor(now/1000)-900).slice(-900);
+ const spot=proxy(),sigma=realizedSigma(120),m30=mom(30),m60=mom(60);
+ const enough=validTarget&&points.length>=45&&Number.isFinite(spot)&&Number.isFinite(sigma)&&sigma>0&&side&&l>25&&q>=55&&Number.isFinite(ceiling);
+ // A broken setup is retired, but the same contract may form a genuinely new one.
+ // Require a cooldown AND sustained directional momentum; never recycle old entry/stop levels.
+ const alignedMomentum=side==='UP'?(m30!=null&&m60!=null&&m30>0&&m60>0):(m30!=null&&m60!=null&&m30<0&&m60<0);
+ const rearmQualified=!!(enough&&alignedMomentum&&Math.max(dp,1-dp)>=.60);
+ if(chartMemory.invalidated){
+  if(now-chartMemory.invalidatedAt>=20000&&rearmQualified){
+   if(!chartMemory.rearmSince)chartMemory.rearmSince=now;
+   if(now-chartMemory.rearmSince>=8000){
+    Object.assign(chartMemory,{extreme:null,stop:null,invalidated:false,reason:'',invalidatedAt:0,rearmSince:0,generation:chartMemory.generation+1,initial:null,lastCeiling:null,lastAt:0,previousInputs:null,history:[]});
+   }
+  }else chartMemory.rearmSince=0;
+ }
+ let invalid=chartMemory.invalidated?null:chartMemory.stop,lo=null,hi=null;
+ if(enough&&!chartMemory.invalidated){
+  chartMemory.extreme=chartMemory.extreme==null?spot:(side==='UP'?Math.max(chartMemory.extreme,spot):Math.min(chartMemory.extreme,spot));
+  const cushion=Math.max(8,Math.min(150,2.2*sigma*Math.sqrt(30)));
+  const candidate=side==='UP'?chartMemory.extreme-cushion:chartMemory.extreme+cushion;
+  // Stop can only tighten, never move away from the trade or reset after a breach.
+  chartMemory.stop=chartMemory.stop==null?candidate:(side==='UP'?Math.max(chartMemory.stop,candidate):Math.min(chartMemory.stop,candidate));
+  invalid=chartMemory.stop;
+  const breached=side==='UP'?spot<=invalid:spot>=invalid;
+  const momentumBreak=side==='UP'?(m30<0&&m60<0):(m30>0&&m60>0);
+  if(breached||momentumBreak){chartMemory.invalidated=true;chartMemory.invalidatedAt=now;chartMemory.rearmSince=0;invalid=null;chartMemory.reason=breached?'BTC crossed the trailing threshold':'30s and 60s momentum reversed';}
+  else {
+   const penalty=clamp(.035+(q<75?.025:0)+(l<90?.02:0),.035,.10);
+   // Smooth display noise but immediately tighten when the allowable price falls.
+   const raw=clamp(ceiling,0,.99);
+   hi=chartMemory.lastCeiling==null?raw:(raw<chartMemory.lastCeiling?raw:Math.min(raw,chartMemory.lastCeiling+.012));
+   lo=clamp(hi-penalty,0,hi);
+   if(chartMemory.initial==null)chartMemory.initial={lo,hi,at:now};
+   if(now-chartMemory.lastAt>=1000){
+    const old=chartMemory.previousInputs;
+    let driver='Initial estimate';
+    if(old){const changes=[['model probability',Math.abs(dp-old.dp)*100],['volatility',Math.abs(sigma-old.sigma)/Math.max(.00001,old.sigma)*5],['time decay',Math.abs(l-old.l)/60],['feed quality',Math.abs(q-old.q)/10]];changes.sort((a,b)=>b[1]-a[1]);driver=changes[0][0];}
+    chartMemory.history.push({ts:now,hi,lo,driver});chartMemory.history=chartMemory.history.slice(-300);
+    $('chartChange').textContent=chartMemory.lastCeiling==null?'Entry band established • experimental estimate':`Ceiling ${hi>=chartMemory.lastCeiling?'rose':'fell'} ${Math.abs((hi-chartMemory.lastCeiling)*100).toFixed(1)}¢ • largest input change: ${driver}`;
+    chartMemory.previousInputs={dp,sigma,l,q};chartMemory.lastCeiling=hi;chartMemory.lastAt=now;
+   }
+  }
+ }
+ if(chartMemory.invalidated){hi=null;lo=null;$('chartChange').textContent='Entry band withdrawn • previous price ceiling is no longer active.';}
+ $('chartEntry').textContent=hi!=null?`${(lo*100).toFixed(1)}–${(hi*100).toFixed(1)}¢`:'—';
+ $('chartExit').textContent=!chartMemory.invalidated&&Number.isFinite(invalid)?`${money(invalid)} BTC`:'—';
+ $('chartOriginal').textContent=chartMemory.initial?`Original setup: ${(chartMemory.initial.lo*100).toFixed(1)}–${(chartMemory.initial.hi*100).toFixed(1)}¢ • frozen for comparison`:'Original setup: —';
+ $('chartStatus').textContent=chartMemory.invalidated?(chartMemory.rearmSince?'REARMING':'COOLDOWN'):!enough?'INSUFFICIENT DATA':`TRACKING ${side} • SETUP ${chartMemory.generation+1}`;
+ $('chartExplanation').textContent=chartMemory.invalidated?`Previous setup retired: ${chartMemory.reason}. ${chartMemory.rearmSince?'Rearming: require 8 seconds of stable momentum.':'Waiting for 20-second cooldown and fresh aligned momentum.'} Old entry and exit levels are withdrawn. No live Robinhood exit bid is available.`:!enough?'Requires a verified current target, 45+ BTC observations and fresh spot data.':`${side} research setup. Entry band is a maximum ROBINHOOD CONTRACT ASK, not a BTC price zone. Red line is a conditional BTC threshold, not a stop order or guaranteed exit price.`;
+ const leftPad=56,rightPad=10,top=12,bottom=25,plotW=width-leftPad-rightPad,plotH=height-top-bottom;
+ const vals=points.map(x=>x.p);if(Number.isFinite(target))vals.push(target);if(Number.isFinite(invalid))vals.push(invalid);
+ if(vals.length<2){ctx.fillStyle='#9da4b1';ctx.font='13px sans-serif';ctx.fillText('Collecting BTC history…',16,40);return}
+ let min=Math.min(...vals),max=Math.max(...vals),pad=Math.max(8,(max-min)*.12);min-=pad;max+=pad;
+ const y=v=>top+(max-v)/(max-min)*plotH,x=i=>leftPad+i/Math.max(1,points.length-1)*plotW;
+ ctx.font='11px sans-serif';ctx.lineWidth=1;
+ for(let i=0;i<=4;i++){const v=min+(max-min)*i/4,yy=y(v);ctx.strokeStyle='#27303b';ctx.beginPath();ctx.moveTo(leftPad,yy);ctx.lineTo(width-rightPad,yy);ctx.stroke();ctx.fillStyle='#9da4b1';ctx.fillText(Math.round(v).toLocaleString(),2,yy+4)}
+ function level(v,color,dash){if(!Number.isFinite(v))return;ctx.strokeStyle=color;ctx.setLineDash(dash);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(leftPad,y(v));ctx.lineTo(width-rightPad,y(v));ctx.stroke();ctx.setLineDash([])}
+ level(target,'#718091',[4,5]);level(invalid,'#ff6870',[7,4]);
+ ctx.font='bold 10px sans-serif';ctx.textAlign='right';if(Number.isFinite(target)){ctx.fillStyle='#9ba6b5';ctx.fillText('RT',width-rightPad-3,Math.max(10,y(target)-4));}if(Number.isFinite(invalid)){ctx.fillStyle='#ff8990';ctx.fillText(side==='UP'?'UI':'DI',width-rightPad-3,Math.max(10,y(invalid)-4));}ctx.textAlign='left';
+ ctx.strokeStyle=chartMemory.invalidated?'#ff6870':'#58a5ff';ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();points.forEach((pt,i)=>i?ctx.lineTo(x(i),y(pt.p)):ctx.moveTo(x(i),y(pt.p)));ctx.stroke();
+ ctx.fillStyle='#9da4b1';ctx.fillText('−'+Math.min(15,Math.round(points.length/60))+'m',leftPad,height-7);ctx.fillText('NOW',width-38,height-7);
+}
+function quantReadout(dp,sm,l,q,dec){
+ const side=dp==null?null:(dp>=.5?'UP':'DOWN');
+ const conf=dp==null?null:Math.max(dp,1-dp);
+ const validTarget=overrideIsCurrent()&&S.rhContractConfirmed;
+ const venues=robustVenueSet().length;
+ const fresh=venues>=2&&S.sec.length>=60&&q>=55&&sm!=null;
+ const trend=trendState(),m15=mom(15),m30=mom(30),m60=mom(60),elRegime=$('quantRegime');
+ const aligned=side&&trend.side===side&&[m15,m30,m60].filter(x=>x!=null&&Math.sign(x)===(side==='UP'?1:-1)).length>=2;
+ const pa=hiddenPriceAction(side);
+ elRegime.textContent='Hidden price action: '+pa.reason+' • '+(pa.ready?(pa.qualified?'CONFIRMED':'WAIT'):'WARM-UP');
+ const hist=S.logs.filter(x=>(x.outcome===0||x.outcome===1)&&x.outcomeSource&&x.outcomeSource!=='proxy');
+ const official=new Set(hist.map(x=>x.ticker)).size;
+ const validated=official>=30; // A minimum sample count alone does NOT establish calibration or profitability.
+ const shock=shockState(modelProxy()!=null&&activeTarget()!=null?modelProxy()-activeTarget():null,l);
+ const shockRisk=!!(shock&&(shock.active===true||shock.shock===true));
+ const uncertainty=clamp(.08+(validated?0:.06)+(q<75?.04:0)+(l!=null&&l<90?.03:0),.08,.24);
+ const ceiling=conf==null?null:clamp(conf-uncertainty,0,.99);
+ let state='WAIT',why='Collecting enough independent spot data.';
+ if(!validTarget)why='Enter the exact Robinhood target and verify its expiry.';
+ else if(!fresh)why='Insufficient fresh spot data or model quality.';
+ else if(l==null||l<=25)why='Final-entry lock: no new entries in the last 25 seconds.';
+ else if(!pa.ready)why=pa.reason+'; no entry setup yet.';
+ else if(!pa.qualified)why='Hidden price-action filter: '+pa.reason+'.';
+ else if(!aligned||conf<.60||shockRisk)why='Momentum, volatility or directional stability is not sufficient.';
+ else if(!validated){state='WATCH '+side;why='Experimental setup detected. Official-outcome calibration is not established; no BUY signal.';}
+ else {state='WATCH '+side;why='Research setup detected; validate reliability and current Robinhood quote before trading.';}
+ const el=id=>document.getElementById(id);
+ el('quantHero').textContent=state;el('quantHero').className='decision-hero '+(state.includes('UP')?'up':state.includes('DOWN')?'down':'');
+ el('quantReason').textContent=why;
+ el('quantProbability').textContent=conf==null?'—':pct(conf)+' '+side;
+ el('quantMax').textContent=validTarget&&ceiling!=null?cents(ceiling):'—';
+ el('quantTime').textContent=l==null?'—':Math.floor(l/60)+':'+String(Math.floor(l%60)).padStart(2,'0');
+ el('quantValidation').textContent=official+' official contracts • '+(validated?'sample threshold met':'unvalidated');
+ el('quantFeed').textContent=venues+' spot venues • '+q+'/100 quality';
+ const ask=rhPriceFresh()?rhManualAsk():null;
+ updateQuantChart(dp,l,q,ceiling,validTarget&&pa.ready&&pa.qualified&&aligned&&!shockRisk&&conf>=.60);
+ if(!pa.ready||!pa.qualified||!aligned||shockRisk||conf<.60){el('quantHero').textContent='WAIT';el('quantHero').className='decision-hero';el('quantMax').textContent='—';}
+ if(chartMemory.invalidated){el('quantHero').textContent=chartMemory.rearmSince?'REARMING':'NO ACTIVE ENTRY';el('quantHero').className='decision-hero';el('quantReason').textContent='Previous '+(chartMemory.side||'')+' setup retired: '+chartMemory.reason+'. Model direction is informational; awaiting a fresh confirmed setup.';el('quantMax').textContent='—';}
+ el('quantQuote').textContent=ask==null?'Robinhood quote not verified or expired (120s).':`Verified manual ${S.execSide||side||'side'} ask: ${cents(ask)} • indicative gross difference ${chartMemory.invalidated||ceiling==null?'unavailable (no active setup)':((ceiling-ask)*100).toFixed(1)+'¢'}; not a proven edge.`;
+}
+function render(){
+ sampleSecond();
+ const m=S.market,t=activeTarget(),kt=marketTarget(m),e=endDate(m),l=left(),p=proxy(),ap=modelProxy(),sm=settlementModel();
+ const raw=sm?.raw??null,baseCal=calibrate(raw),cal=resilientProbability(baseCal,sm,l);
+ if(cal!=null){S.pHist.push({t:Date.now(),p:cal});if(S.pHist.length>500)S.pHist.shift()}
+ const ef=executionFreshness(),tc=targetComparison(),kpRaw=normalizedMarketP(),externalComparable=!overrideIsCurrent()||tc.comparable,kp=(ef.fresh&&externalComparable)?kpRaw:null,spr=ef.fresh?kalshiSpread():null,imb=ef.fresh?orderImbalance():null,q=modelQuality(sm),execQ=executionQuality(),req=requiredEdge(q,l??999,spr,sm);
+ const ya=ef.fresh?askYes():null,na=ef.fresh?askNo():null,ue=cal!=null&&ya!=null?cal-ya:null,de=cal!=null&&na!=null?(1-cal)-na:null;
+ const gap=cal!=null&&kp!=null?cal-kp:null,xdis=externalDisagreement(kp),dist=ap!=null&&t!=null?ap-t:null,pr=pRange(),sh=shockState(dist,l);
+ const decisionP=decisionProbability(cal,l,null,dist);updateExecutionSide(decisionP);const dec=entryDecision(decisionP,l,q,execQ,ya,na,req,null,dist,sm);quantReadout(decisionP,sm,l,q,dec);
+ if(S.execValidation && !S.execValidation.ok){
+   dec.action='WAIT';
+   dec.why=`EXTERNAL MARKET INVALID — NO ENTRY. Robinhood quote remains ${dec.ask==null?'unpriced':cents(dec.ask)} for the locked ${dec.side||'side'}, but external confirmation failed: ${S.execValidation.reasons.join('; ')}.`;
+ }else if(!ef.fresh&&S.marketTs){dec.action='WAIT';dec.why=`STALE EXTERNAL MARKET — NO ENTRY. Robinhood price is not reinterpreted. Last transport ${(ef.age/1000).toFixed(1)}s ago${ef.dataAge!=null?`; upstream book ${(ef.dataAge/1000).toFixed(1)}s old`:''}.`; }
+ // Final-minute safety: do not issue a new ENTER if too much of the settlement window is missing.
+ if(l!=null&&l<=60&&sm?.phase==='FINAL 60s averaging'&&(sm.missingPast??0)>8){dec.action='WAIT';dec.edge=null;dec.why=`FINAL-MINUTE DATA INCOMPLETE — DO NOT ENTER. ${sm.missingPast} settlement observations are missing.`;}
+
+ $('ticker').textContent=m?.ticker||inferredContractLabel();$('ktarget').textContent=money(kt);$('target').textContent=money(t);
+ $('targetSrc').textContent=overrideIsCurrent()?'Robinhood override':(kt!=null?'DepthFeed/Kalshi':'Unavailable');
+ $('end').textContent=e?e.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'—';
+ $('count').textContent=l==null?'—':String(Math.floor(l/60)).padStart(2,'0')+':'+String(Math.floor(l%60)).padStart(2,'0');
+ $('cb').textContent=money(S.px.coinbase);$('kr').textContent=money(S.px.kraken);$('bs').textContent=money(S.px.bitstamp);$('gm').textContent=money(S.px.gemini);$('proxy').textContent=money(p);$('adjProxy').textContent=money(ap);
+ $('disp').textContent=dispersion()==null?'—':'$'+dispersion().toFixed(2);$('venuesUsed').textContent=robustVenueSet().map(x=>x.k).join(', ')||'—';$('dist').textContent=signedMoney(dist);$('dist').className='val '+(dist>0?'green':dist<0?'orange':'');
+ const fm=x=>x==null?'—':(x>=0?'+':'')+'$'+x.toFixed(2);
+ $('moms').textContent=[mom(15),mom(30),mom(60)].map(fm).join(' / ');
+ $('sigma').textContent=realizedSigma(120)==null?'—':'$'+realizedSigma(120).toFixed(2)+'/s';$('volreg').textContent=volRegime();
+
+ $('phase').textContent=sm?.phase||'—';$('settN').textContent=(sm?.n??0)+' / 60';$('settAvg').textContent=money(sm?.obsAvg);$('reqAvg').textContent=money(sm?.req);$('expAvg').textContent=money(sm?.exp);$('settSD').textContent=sm?'$'+sm.sd.toFixed(2):'—';$('basisUnc').textContent=sm?'$'+sm.basisUnc.toFixed(2):'—';$('lean').textContent=cal==null?'—':(cal>0.58?'UP '+pct(cal):cal<0.42?'DOWN '+pct(1-cal):'NEUTRAL '+pct(cal));
+
+ const yb=ef.fresh?bidYes():null,nb=ef.fresh?bidNo():null;$('kyes').textContent=(yb!=null?cents(yb):'—')+' / '+(ya!=null?cents(ya):'—');$('kno').textContent=(nb!=null?cents(nb):'—')+' / '+(na!=null?cents(na):'—');
+ $('kprob').textContent=pct(kp);$('kspread').textContent=spr==null?'—':cents(spr);$('imb').textContent=imb==null?'—':(imb>=0?'+':'')+(imb*100).toFixed(0)+'% YES';
+ $('dfimb').textContent=S.dfMicro?.imbalance==null?'—':(S.dfMicro.imbalance*100).toFixed(1)+'%'; $('dfliq').textContent=pct(S.dfMicro?.liqP); $('dfmicro').textContent=pct(S.dfMicro?.microP); $('dfdepth').textContent=S.dfMicro?Math.round(S.dfMicro.yesDepth).toLocaleString()+' / '+Math.round(S.dfMicro.noDepth).toLocaleString():'—';
+ $('poly').textContent=(Date.now()-S.polyTs<10000)?pct(S.poly):'—';$('xdis').textContent=xdis==null?'—':(xdis*100).toFixed(1)+' pts';
+
+ $('rawP').textContent=pct(raw);$('calP').textContent=pct(cal);
+ $('pCap').textContent=sm?.cap==null?'—':pct(sm.cap);
+ $('trendPersist').textContent=sm==null?'—':(sm.persistence*100).toFixed(0)+'/100'+(sm.meanRev>0?' • mean-reversion risk':'');
+ $('driftImpact').textContent=sm==null?'—':signedMoney(sm.driftImpact);
+ $('sigmaBlend').textContent=sm==null?'—':'$'+sm.sigmaBlend.toFixed(2)+'/s';
+ $('downP').textContent=cal==null?'—':pct(1-cal);$('mkP').textContent=pct(kp);$('gap').textContent=gap==null?'—':(gap>=0?'+':'')+(gap*100).toFixed(1)+' pts';$('edgeReq').textContent=pct(req);
+ $('upEdge').textContent=pct(ue);$('dnEdge').textContent=pct(de);$('upEdge').className='val '+(ue>0?'green':'orange');$('dnEdge').className='val '+(de>0?'green':'orange');
+ $('stab').textContent=(pr*100).toFixed(1)+' pts';$('shock').textContent=sh||'none';
+ const cs=calibrationStats();$('calN').textContent=cs.n;$('brier').textContent=cs.brier==null?'—':cs.brier.toFixed(3);
+
+ const rr=resilience(sm,l),zd=normalizedDistance(t,ap,sm,l);
+ // V13: informational automatic price estimate; NEVER passed to execution eligibility.
+ const autoPanel=$('autoPricePanel');
+ const matched=targetComparison().comparable && S.execValidation?.ok===true && ef.fresh && !S.relayDiag.stale;
+ const autoAsk=matched && S.execSide ? (S.execSide==='UP'?ya:na) : null;
+ const autoFair=decisionP==null||!S.execSide?null:(S.execSide==='UP'?decisionP:1-decisionP);
+ if(autoPanel){
+   if(autoAsk!=null && autoAsk>0 && autoAsk<1){
+     const gap=autoFair==null?null:autoFair-autoAsk;
+     autoPanel.textContent=`EXTERNAL ${S.execSide} ASK ${cents(autoAsk)} • model fair ${cents(autoFair)} • indicative gap ${gap==null?'—':(gap*100).toFixed(1)+' pts'}. NOT a Robinhood quote. Confirm Robinhood ask before trading.`;
+     autoPanel.className='notice ok';
+   }else if(autoFair!=null){
+     autoPanel.textContent=`MODEL ESTIMATE ${S.execSide}: ${cents(autoFair)} fair value (not an ask). No verified matching fresh external quote. Robinhood price still required for entry.`;
+     autoPanel.className='notice warn';
+   }else{autoPanel.textContent='Automatic price estimate unavailable: waiting for model and locked side. Kalshi 429 or missing DepthFeed data can also prevent initialization.';autoPanel.className='notice warn';}
+ }
+ // V13.2: show both sides independently of manual Robinhood input. Never feed these into execution gates.
+ const both=$('autoEstimateBoth');
+ if(both){
+   const validP=decisionP!=null&&Number.isFinite(decisionP)&&decisionP>=0&&decisionP<=1;
+   const validQuote=x=>x!=null&&Number.isFinite(x)&&x>=0&&x<=1;
+   const extOK=matched&&validQuote(ya)&&validQuote(na);
+   const upFair=validP?decisionP:null,downFair=validP?1-decisionP:null;
+   const fmt=x=>x==null?'—':(x*100).toFixed(1)+'¢';
+   const edge=(fair,ask)=>fair==null||ask==null?'—':((fair-ask)*100).toFixed(1)+' pts';
+   const lean=!validP?'UNAVAILABLE':decisionP>=.55?'UP':decisionP<=.45?'DOWN':'NEUTRAL';
+   both.textContent=`MODEL DIRECTION: ${lean} • UP fair ${fmt(upFair)} / DOWN fair ${fmt(downFair)}. `+
+     (extOK?`MATCHED KALSHI INDICATIVE ASKS: UP ${fmt(ya)} (gap ${edge(upFair,ya)}), DOWN ${fmt(na)} (gap ${edge(downFair,na)}). `:
+       'External asks unavailable or contract match/staleness check failed. ')+
+     'Fair value is modeled probability, NOT an estimated Robinhood ask. No executable trade without verified Robinhood price, target, expiry and fees.';
+   both.className='notice '+(extOK?'ok':'warn');
+ }
+ const rhAsk=rhManualAsk(),rhFresh=rhPriceFresh(),rhVerified=S.rhContractConfirmed===true;
+ const rhSide=S.execSide;
+ const rhFair=(decisionP==null||!rhSide)?null:(rhSide==='UP'?decisionP:1-decisionP);
+ const rhEdge=(rhFair!=null&&rhAsk!=null)?rhFair-rhAsk:null;
+ $('rhSide').textContent=rhSide||'LOCKING';$('rhSide').className='quick-side '+(rhSide==='UP'?'green':rhSide==='DOWN'?'orange':'yellow');
+ const qb=$('quickExec'),lb=$('execLockBanner'),inp=$('rhExecPrice');
+ qb.className='quick-exec '+(rhSide==='UP'?'side-up':rhSide==='DOWN'?'side-down':'');
+ if(S.sideFlipBlocked){
+   lb.textContent=`⚠ SIDE CHANGED — CANCEL ${S.sideFlipFrom} ENTRY • waiting to lock ${dec.modelSide||'new side'}`;
+   lb.className='notice cancel';inp.disabled=true;
+ }else if(rhSide){
+   lb.textContent=`EXECUTION SIDE LOCKED: ${rhSide} 🔒 • this price box cannot switch sides`;
+   lb.className='notice '+(rhSide==='UP'?'locked-up':'locked-down');inp.disabled=false;
+ }else if(S.execSideCandidate){
+   const remain=Math.max(0,C.sideLockSec-(Date.now()-S.execSideCandidateTs)/1000);
+   lb.textContent=`LOCKING ${S.execSideCandidate} • ${remain.toFixed(1)}s stable signal required`;
+   lb.className='notice warn';inp.disabled=true;
+ }else{
+   lb.textContent='WAITING FOR ≥55% MODEL CONFIDENCE TO LOCK A SIDE';
+   lb.className='notice warn';inp.disabled=true;
+ }
+ $('rhProb').textContent=pct(kpRaw);$('rhBasis').textContent=money(tc.ext);$('rhTargetDisplay').textContent=money(tc.rh);$('rhTargetDiff').textContent=tc.diff==null?'—':signedMoney(tc.diff);$('rhTargetDiff').className='val '+(tc.diff==null?'':tc.comparable?'green':'orange');$('rhComparable').textContent=tc.diff==null?'ENTER RH TARGET':(tc.comparable?'COMPARABLE ✓':'DIFFERENT TARGETS — external odds informational only');$('rhComparable').className='val '+(tc.comparable?'green':'yellow');$('basisEst').textContent=rhVerified?'Verified ✓':'Not verified';$('basisEst').className='val '+(rhVerified?'green':'yellow');$('basisMeta').textContent=S.rhExecTs?Math.round((Date.now()-S.rhExecTs)/1000)+'s':'—';$('rhGap').textContent=rhEdge==null?'—':(rhEdge>=0?'+':'')+(rhEdge*100).toFixed(1)+' pts';
+ $('rhConfirmTarget').textContent=`${money(tc.rh)} • ${e?e.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'—'} end`;
+ const edgeSource='Manual Robinhood '+rhSide+' price';const edgeNow=rhEdge;
+ if(edgeNow!=null&&rhFresh&&rhVerified){const eid=currentContractId();const last=S.edgeTrack[S.edgeTrack.length-1];if(!last||last.id!==eid||Date.now()-last.ts>=5000){S.edgeTrack.push({ts:Date.now(),id:eid,e:edgeNow,model:rhFair,market:rhAsk,source:edgeSource});if(S.edgeTrack.length>500)S.edgeTrack.shift()}}
+ const eid=currentContractId(),et=S.edgeTrack.filter(x=>x.id===eid),peak=et.length?et.reduce((a,b)=>Math.abs(b.e)>Math.abs(a.e)?b:a):null,close=(peak&&edgeNow!=null)?Math.abs(peak.e)-Math.abs(edgeNow):null;
+ $('edgeHero').textContent=edgeNow==null?'ROBINHOOD EDGE: —':`${rhSide} EDGE ${(edgeNow*100).toFixed(1)} pts`;
+ $('edgeHero').className='signal '+(edgeNow==null?'':edgeNow>=0?(rhSide==='UP'?'up':'down'):'');$('edgeSource').textContent=edgeSource;$('edgeNow').textContent=edgeNow==null?'—':(edgeNow>=0?'+':'')+(edgeNow*100).toFixed(1)+' pts';$('edgePeak').textContent=peak?((peak.e>=0?'+':'')+(peak.e*100).toFixed(1)+' pts'):'—';$('edgeClose').textContent=close==null?'—':(close>=0?'+':'')+(close*100).toFixed(1)+' pts '+(close>0?'toward model':close<0?'away from model':'unchanged');$('edgeSamples').textContent=et.length;
+ $('kroute').textContent=S.kalshiDiag.route;$('khttp').textContent=S.kalshiDiag.http;$('kerr').textContent=S.kalshiDiag.error||'—';$('kage').textContent=S.marketTs?((Date.now()-S.marketTs)/1000).toFixed(1)+'s':'—';$('relayStatus').textContent=S.relayDiag.status;$('relayLatency').textContent=S.relayDiag.latency==null?'—':S.relayDiag.latency+' ms';$('relayCache').textContent=(S.relayDiag.cache||'—')+(S.relayDiag.stale?' / STALE':'');$('relayUpstream').textContent=S.relayDiag.upstream||'—';$('kcandidates').textContent=inferredKalshiTickers().slice(0,4).join(' / ');
+ const p60=pAt(60),p30=pAt(30),p15=pAt(15);$('ptraj').textContent=[p60,p30,p15,cal].map(pct).join(' / ');
+ const dp=distanceOnlyProbability(sm,t,ap),momEff=(raw!=null&&dp!=null)?raw-dp:null,calEff=(cal!=null&&raw!=null)?cal-raw:null;$('distP').textContent=pct(dp);$('momPEffect').textContent=momEff==null?'—':(momEff>=0?'+':'')+(momEff*100).toFixed(1)+' pts';$('calEffect').textContent=calEff==null?'—':(calEff>=0?'+':'')+(calEff*100).toFixed(1)+' pts';
+ $('resConf').textContent=sm?(rr.confidence*100).toFixed(0)+'/100':'—';
+ $('zdist').textContent=zd==null?'—':(zd>=0?'+':'')+zd.toFixed(2)+'σ';
+ $('feedPenalty').textContent=sm?(rr.penalty*100).toFixed(1)+' pts':'—';
+ $('execP').textContent=(cal!=null&&ya!=null&&na!=null)?pct(cal):'—';
+ $('dq').textContent=q+'/100';$('dqbar').style.width=q+'%';$('execQ').textContent=execQ+'/100';
+ const kalFresh=ef.fresh, spots=robustVenueSet().length;
+ const hasTarget=t!=null, hasModel=hasTarget&&cal!=null&&l!=null&&l>=0&&l<=905;
+ const hasExternal=kalFresh&&ya!=null&&na!=null;
+ const hasExec=hasExternal&&S.rhContractConfirmed&&rhPriceFresh();
+ const mode=hasExternal&&hasModel?'FULL':hasModel?'DEGRADED MODEL':'PASS ONLY';
+ $('mode').textContent=mode;$('mode').className='val '+(mode==='FULL'?'green':mode==='DEGRADED MODEL'?'yellow':'red');
+ $('permission').textContent=(hasExec&&q>=C.minQuality)?'ROBINHOOD READY':'VERIFY / PRICE';$('permission').className='val '+((hasExec&&q>=80)?'green':(hasExternal&&q>=C.minQuality)?'yellow':'red');
+ $('feedmsg').className='notice '+(mode==='FULL'?'ok':mode==='DEGRADED MODEL'?'warn':'bad');
+ $('feedmsg').textContent=mode==='FULL'?`Full model mode: DepthFeed/Kalshi + ${spots} robust spot venue(s). Robinhood execution stays manual.`:mode==='DEGRADED MODEL'?`Model healthy at ${q}/100 from ${spots} robust spot venue(s). Execution quality ${execQ}/100; ${Date.now()-S.polyTs<10000?'Polymarket live':'Polymarket unavailable'} and DepthFeed execution quotes unavailable.`:`PASS only: target/model inputs incomplete.`;
+
+  let sig='PASS',cls='',reason=dec.why;
+  if(false&&dec.action.startsWith('ENTER')){sig='BUY '+dec.side;cls=dec.side==='UP'?'up':'down';reason=dec.why}
+  else if(dec.action.startsWith('WATCH')){sig='PASS';reason=dec.why}
+ const call=cal==null?'—':cal>=.55?'UP '+pct(cal):cal<=.45?'DOWN '+pct(1-cal):'NEUTRAL '+pct(cal);
+ $('modelCall').textContent='MODEL CALL: '+call;
+ $('modelCall').className='signal '+(cal>=.55?'up':cal<=.45?'down':'');
+ $('signal').textContent=sig;$('signal').className='signal '+cls;$('reason').textContent=reason;
+ // V10.5 simplified entry view
+ $('actionHero').textContent=dec.action.startsWith('ENTER')?'WATCH '+dec.side:dec.action;$('actionHero').className='decision-hero '+(dec.action.includes('UP')?'up':dec.action.includes('DOWN')?'down':dec.action.startsWith('WATCH')?'watch':'');
+ const msNow=modelSideState(decisionP),side=msNow.side,conf=msNow.conf;
+ $('actionSub').textContent=decisionP==null?'Building live evidence…':`${side} decision confidence ${pct(conf)} • execution lock ${S.execSide||'forming'} • model ${pct(cal)} • market ${pct(kp)}`;
+  // V11.5: external feeds automate model confirmation; Robinhood execution remains manual and fail-closed.
+  const contractOK=!!(S.execValidation?.ok===true)&&!!ef.fresh;
+  const rhTargetReady=overrideIsCurrent();
+  const rhReady=S.rhContractConfirmed===true&&rhPriceFresh();
+  $('contractMatch').textContent=contractOK?(externalComparable?'EXTERNAL MARKET VERIFIED ✓':'EXTERNAL LIVE • TARGET DIFFERS'):'EXTERNAL MARKET INVALID ✕';
+  $('contractMatch').className='match-badge '+(contractOK?'ok':'bad');
+  $('feedHealth').textContent=S.sideFlipBlocked?'SIDE CHANGED — CANCEL ENTRY':(rhReady?`RH ${S.execSide} PRICE READY ✓`:(S.execSide?`ENTER RH ${S.execSide} PRICE`:'LOCKING SIDE'));
+  $('feedHealth').className='match-badge '+(rhReady?'ok':'warn');
+  const inLate=l!=null&&l<=60; $('lateMode').className='late-pill '+(inLate?'':'hidden');
+  const maxPay=(dec.fair!=null)?clamp(dec.fair-req,0,.99):null;const guide=$('betGuide');
+   renderV12Action(dec,decisionP,rhAsk,rhFresh,rhVerified,contractOK,l);
+  if(S.sideFlipBlocked){$('maxPay').textContent='CANCEL ENTRY';$('priceGuide').textContent='The model changed sides. Do not reuse the old quote. The price field has been cleared and disabled until a new side remains stable.';guide.className='bet-guide block';}
+  else if(!contractOK){$('maxPay').textContent='NO ENTRY';$('priceGuide').textContent='External confirmation is invalid or stale. Your Robinhood quote remains attached to the locked side and will not be reinterpreted.';guide.className='bet-guide block';}
+  else if(!rhTargetReady){$('maxPay').textContent='ENTER RH TARGET';$('priceGuide').textContent='Enter the exact target shown by Robinhood for this 15-minute contract. The model will use that target; external odds stay separate.';guide.className='bet-guide watch';}
+  else if(!S.rhContractConfirmed){$('maxPay').textContent=maxPay!=null?`${dec.side||'SIDE'} ≤ ${cents(maxPay)}`:'VERIFY WINDOW';$('priceGuide').textContent='Verify the Robinhood 15-minute window/end time. External quotes are confirmation only and are not treated as Robinhood execution prices.';guide.className='bet-guide watch';}
+  else if(!rhPriceFresh()){$('maxPay').textContent=maxPay!=null?`${dec.side||'SIDE'} ≤ ${cents(maxPay)}`:'ENTER PRICE';$('priceGuide').textContent=`Enter the current Robinhood ${dec.side||''} price. The value above is the maximum model price, not a live Robinhood quote.`;guide.className='bet-guide watch';}
+  else if(dec.side&&maxPay!=null){const cap=cents(maxPay);if(dec.action.startsWith('ENTER')){$('maxPay').textContent=`${dec.side} ≤ ${cap}`;$('priceGuide').textContent=`Entered Robinhood price ${dec.ask==null?'—':cents(dec.ask)}. Entry is eligible only while this signal remains ENTER and the price is ${cap} or cheaper.`;guide.className='bet-guide enter';}else if(dec.action.startsWith('WATCH')){$('maxPay').textContent=`WATCH ${dec.side} ≤ ${cap}`;$('priceGuide').textContent=`Entered Robinhood price ${dec.ask==null?'—':cents(dec.ask)}. No entry yet; wait for confirmation and keep price at ${cap} or cheaper.`;guide.className='bet-guide watch';}else{$('maxPay').textContent=`WAIT • ${dec.side} ≤ ${cap}`;$('priceGuide').textContent='Current model ceiling only; no entry signal.';guide.className='bet-guide block';}}
+  else{$('maxPay').textContent='WAIT';$('priceGuide').textContent='No validated side has enough evidence yet.';guide.className='bet-guide block';}
+  $('actionPriceLabel').textContent=`Robinhood ${dec.side||''} price`;
+  $('actionPrice').textContent=dec.ask==null?'—':cents(dec.ask);$('fairValue').textContent=dec.fair==null?'—':cents(dec.fair);$('entryEdge').textContent=dec.edge==null?'—':((dec.edge>=0?'+':'')+(dec.edge*100).toFixed(1)+' pts');$('entryEdge').className='num '+(dec.edge!=null&&dec.edge>=req?'green':dec.edge!=null&&dec.edge>0?'yellow':'orange');
+ $('simpleTime').textContent=l==null?'—':String(Math.floor(l/60)).padStart(2,'0')+':'+String(Math.floor(l%60)).padStart(2,'0');$('targetSummary').textContent=dist==null?'—':`${signedMoney(dist)} vs target • ${dist>0?'UP':'DOWN'} side`;
+ $('trendSummary').textContent=`${dec.tr.label}${dec.tr.score?` • ${dec.tr.score>=0?'+':''}$${dec.tr.score.toFixed(1)}`:''}`;$('trendSummary').className=dec.tr.side==='UP'?'green':dec.tr.side==='DOWN'?'orange':'';
+ $('volSummary').textContent=`${volRegime()} • σ ${sm?'$'+sm.sigmaBlend.toFixed(2)+'/s':'—'}`;
+ $('settlementSummary').textContent=sm?.phase==='FINAL 60s averaging'?`${sm.n}/60 elapsed • ${sm.observedN??0} observed${sm.missingPast?` • ${sm.missingPast} missing`:''}${sm.req!=null?` • need ${money(sm.req)}`:''}`:'Pre-window';
+ const invalidExec=S.execValidation&&!S.execValidation.ok;
+ const ms=invalidExec?'EXTERNAL MARKET INVALID':(!ef.fresh?'STALE MARKET':(!externalComparable&&overrideIsCurrent()?`external ${pct(kpRaw)} UP • target differs`:(kp==null?'market —':`market ${pct(kp)} UP`))),bs=invalidExec?'book blocked':(!ef.fresh?'book —':(!externalComparable&&overrideIsCurrent()?'book informational only':(S.dfMicro?.imbalance==null?'book —':`book ${(S.dfMicro.imbalance*100).toFixed(0)}%`)));$('agreementSummary').textContent=`${ms} • ${bs}`;$('agreementSummary').className=(invalidExec||!ef.fresh)?'red':'';
+ $('simpleQuality').textContent=`model ${q}/100 • execution ${execQ}/100`;
+ const maxPay2=(dec.fair!=null)?clamp(dec.fair-req,0,.99):null;
+ let simpleWhy=dec.why;
+ if(dec.action.startsWith('ENTER')&&maxPay2!=null)simpleWhy=`${dec.action}: Robinhood price must be ${cents(maxPay2)} or cheaper. Current manual price ${dec.ask==null?'—':cents(dec.ask)}. ${dec.supports.length?`Confirmed by ${dec.supports.join(' + ')}.`:''}`;
+ else if(dec.action.startsWith('WATCH')&&maxPay2!=null)simpleWhy=`${dec.action}: wait for Robinhood at ${cents(maxPay2)} or cheaper and keep confirmation. Current manual price ${dec.ask==null?'—':cents(dec.ask)}.`;
+ $('decisionWhy').textContent=simpleWhy;$('decisionWhy').className='notice '+(dec.action.startsWith('ENTER')?'ok':dec.action.startsWith('WATCH')?'warn':'bad');
+ const emp=empiricalCalibrationScale(l);$('autoStatus').textContent=`AUTO LOG ON • late calibration ${lateCalibrationPrior(l).toFixed(2)}x${emp.active?` • learned ${emp.scale.toFixed(2)}x (${emp.n})`:''}`;
+ autoCheckpoint({m,t,l,p,ap,raw,cal,kp,ya,na,ue,de,q,req,sig,sm},decisionP,dec);
+ maybeLog({m,t,l,p,ap,raw,cal:decisionP,kp,ya,na,ue:decisionP!=null&&ya!=null?decisionP-ya:null,de:decisionP!=null&&na!=null?(1-decisionP)-na:null,q,req,sig:dec.action,sm});
+ updateLogStats();
+}
+
+function maybeLog(z){
+ if(z.cal==null||z.t==null||Date.now()-S.lastLog<10000)return;
+ S.lastLog=Date.now();
+ const id=z.m?.ticker||currentContractId();
+ S.logs.push({ts:Date.now(),ticker:id,left:+z.l.toFixed(1),target:z.t,targetSource:overrideIsCurrent()?'Robinhood':(z.m?.ticker?'DepthFeed/Kalshi':'Manual'),proxy:z.p,adjustedProxy:z.ap,p:z.cal,raw:z.raw,marketP:z.kp,yesAsk:z.ya,noAsk:z.na,upEdge:z.ue,downEdge:z.de,quality:z.q,requiredEdge:z.req,signal:z.sig,volRegime:volRegime(),dispersion:dispersion(),settlementPhase:z.sm?.phase||'',probCap:z.sm?.cap??null,trendPersistence:z.sm?.persistence??null,meanReversion:z.sm?.meanRev??null,driftImpact:z.sm?.driftImpact??null,sigmaBlend:z.sm?.sigmaBlend??null,resiliencePenalty:resilience(z.sm,z.l).penalty,zDistance:normalizedDistance(z.t,z.ap,z.sm,z.l),basisEstimate:basisEstimate().basis,basisWeight:basisEstimate().weight,rhP:rhNormalizedP(),rhBrti:null,rhExecPrice:S.rhExecPrice,outcome:null});
+ if(S.logs.length>C.maxLogs)S.logs=S.logs.slice(-C.maxLogs);
+ localStorage.setItem('v9ShadowLogs',JSON.stringify(S.logs));
+}
+function updateLogStats(){
+ const r=S.logs.filter(x=>x.outcome===0||x.outcome===1),b=r.filter(x=>/^BUY/.test(x.signal)),hits=b.filter(x=>(x.signal==='BUY UP'&&x.outcome===1)||(x.signal==='BUY DOWN'&&x.outcome===0)).length;
+ $('logN').textContent=S.logs.length;$('resN').textContent=r.length;$('buyN').textContent=S.logs.filter(x=>/^BUY/.test(x.signal)).length;$('hit').textContent=b.length?pct(hits/b.length):'—';
+ $('rhN').textContent=S.rhSnaps.length;const rb=S.rhSnaps.filter(x=>(x.outcome===0||x.outcome===1)&&Number.isFinite(x.rhP));const mb=S.rhSnaps.filter(x=>(x.outcome===0||x.outcome===1)&&Number.isFinite(x.modelP));$('modelBrier').textContent=mb.length?mean(mb.map(x=>(x.modelP-x.outcome)**2)).toFixed(3):'—';$('rhBrier').textContent=rb.length?mean(rb.map(x=>(x.rhP-x.outcome)**2)).toFixed(3):'—';
+ updateScorecard();
+}
+function updateScorecard(){
+ const resolved=S.logs.filter(x=>(x.outcome===0||x.outcome===1)&&Number.isFinite(x.p));
+ const byContract=new Map();for(const x of resolved){const k=x.ticker||String(Math.floor(x.ts/900000));if(!byContract.has(k))byContract.set(k,x)}
+ $('scContracts').textContent=byContract.size;
+ if(!resolved.length){$('scBrier').textContent=$('scLogLoss').textContent=$('scAccuracy').textContent=$('scMarketBrier').textContent=$('scVsMarket').textContent='—';$('scTime').textContent='Time buckets: —';$('scCal').textContent='Calibration buckets: —';return}
+ const brier=mean(resolved.map(x=>(x.p-x.outcome)**2));const ll=mean(resolved.map(x=>{const p=clamp(x.p,.001,.999);return -(x.outcome*Math.log(p)+(1-x.outcome)*Math.log(1-p))}));const acc=mean(resolved.map(x=>(x.p>=.5?1:0)===x.outcome?1:0));
+ const mr=resolved.filter(x=>Number.isFinite(x.marketP));const mb=mr.length?mean(mr.map(x=>(x.marketP-x.outcome)**2)):null;
+ $('scBrier').textContent=brier.toFixed(3);$('scLogLoss').textContent=ll.toFixed(3);$('scAccuracy').textContent=pct(acc);$('scMarketBrier').textContent=mb==null?'—':mb.toFixed(3);$('scVsMarket').textContent=mb==null?'—':((mb-brier)>=0?'+':'')+(mb-brier).toFixed(3)+' model advantage';
+ const tb=[['10–15m',600,901],['5–10m',300,600],['2–5m',120,300],['1–2m',60,120],['<1m',0,60]];const tparts=[];for(const [name,a,b] of tb){const q=resolved.filter(x=>x.left>=a&&x.left<b);if(q.length)tparts.push(`${name}: n=${q.length}, Brier ${mean(q.map(x=>(x.p-x.outcome)**2)).toFixed(3)}, acc ${pct(mean(q.map(x=>(x.p>=.5?1:0)===x.outcome?1:0)))}`)}$('scTime').textContent='Time buckets: '+(tparts.join(' • ')||'—');
+ const cparts=[];for(let lo=.5;lo<1;lo+=.1){const hi=Math.min(1,lo+.1),q=resolved.filter(x=>{const conf=Math.max(x.p,1-x.p);return conf>=lo&&conf<(hi===1?1.001:hi)});if(q.length){const predicted=mean(q.map(x=>Math.max(x.p,1-x.p))),actual=mean(q.map(x=>(x.p>=.5?x.outcome:1-x.outcome)));cparts.push(`${Math.round(lo*100)}–${Math.round(hi*100)}%: n=${q.length}, predicted ${pct(predicted)}, realized ${pct(actual)}`)}}$('scCal').textContent='Calibration buckets: '+(cparts.join(' • ')||'—');
+}
+function queueResolve(ticker){
+ if(!ticker||S.resolveQueue[ticker])return;S.resolveQueue[ticker]=0;
+ const go=async()=>{
+   S.resolveQueue[ticker]++;
+   let m=null;
+   try{const j=await relayJson(`/kalshi/market/${encodeURIComponent(ticker)}`,3500);m=j?.market||null}catch(e){}
+   const res=String(m?.result||'').toLowerCase();
+   if(res==='yes'||res==='no'){
+     const out=res==='yes'?1:0;let changed=false;for(const x of S.logs)if(x.ticker===ticker&&x.outcome==null){x.outcome=out;changed=true}
+     if(changed)localStorage.setItem('v9ShadowLogs',JSON.stringify(S.logs));delete S.resolveQueue[ticker];updateLogStats();return;
+   }
+   if(S.resolveQueue[ticker]<40)setTimeout(go,30000);else delete S.resolveQueue[ticker];
+ };setTimeout(go,45000);
+}
+function captureRobinhood(){
+ const price=N($('rhExecPrice').value),t=activeTarget(),l=left(),sm=settlementModel(),raw=sm?.raw??null,cal=resilientProbability(calibrate(raw),sm,l);
+ const dp=decisionProbability(cal,l,normalizedMarketP(),modelProxy()!=null&&t!=null?modelProxy()-t:null);
+ const side=S.execSide;
+ if(S.sideFlipBlocked){alert('SIDE CHANGED — cancel the old entry. Wait for the new side to lock before entering a price.');return}
+ if(!side){alert('Wait for the execution side to lock before entering a Robinhood price.');return}
+ if(price==null||price<=0||price>=100){alert(`Enter the current Robinhood ${side} price in cents, from 0 to 100.`);return}
+ if(!overrideIsCurrent()){alert('Enter the exact Robinhood target for this 15-minute window first.');return}
+ if(!$('rhContractConfirm').checked){alert('Verify the Robinhood 15-minute window/end time first.');return}
+ const ms=modelSideState(dp);
+ if(ms.side!==side||ms.conf<C.sideMinConf){alert(`The model no longer supports the locked ${side} side. Do not enter this quote.`);return}
+ S.rhExecPrice=price;S.rhExecTs=Date.now();S.rhContractConfirmed=true;
+ const p=proxy(),fair=dp==null?null:(side==='UP'?dp:1-dp),id=currentContractId();
+ S.rhSnaps.push({ts:Date.now(),ticker:id,left:l,target:t,proxy:p,side,rhPriceCents:price,modelP:dp,fair,edge:fair==null?null:fair-price/100,outcome:null});
+ if(S.rhSnaps.length>1000)S.rhSnaps=S.rhSnaps.slice(-1000);
+ localStorage.setItem('v96RhSnaps',JSON.stringify(S.rhSnaps));render();updateLogStats();
+}
+
+function safeRender(){
+  try{
+    render();
+    setDiag('diagJs','RUNNING','good');
+  }catch(e){
+    reportStartupError(e);
+    const a=document.getElementById('actionSub');if(a)a.textContent='Dashboard error — see LIVE CONNECTION STATUS above.';
+  }
+}
+
+$('exportFlightCsv').onclick=()=>downloadText('btc15m-flight-log.csv',flightCsv());
+$('exportAutoCsv').onclick=()=>downloadText('btc15m-auto-capture.csv',autoCsv());
+$('clearAutoCapture').onclick=()=>{if(confirm('Clear all auto-captured BET signals?')){S.autoCapture=[];persistAutoCapture();autoCaptureStats();}};
+autoCaptureStats();flightStats();
+$('captureRh').onclick=captureRobinhood;$('clearRh').onclick=()=>{clearRhPriceOnly();render()};
+$('rhExecPrice').addEventListener('input',()=>{if(S.sideFlipBlocked||!S.execSide){clearRhPriceOnly();return}S.rhExecPrice=N($('rhExecPrice').value);S.rhExecTs=S.rhExecPrice!=null?Date.now():0;render()});
+$('rhContractConfirm').addEventListener('change',()=>{S.rhContractConfirmed=$('rhContractConfirm').checked;render()});
+function armRobinhoodTargetFromInput(){
+ const v=N($('rhTarget').value);
+ if(v!=null&&v>1000){
+   const sk=slotKey();
+   const changedTarget=S.targetOverride!==v||String(S.overrideTicker)!==String(sk);
+   S.targetOverride=v;S.overrideTicker=sk;localStorage.setItem('v9Target',JSON.stringify({v,slot:sk}));
+   if(changedTarget){S.lastFlightTs=0;S.lastFlightState=null;S.lastFlightSlot=null;}
+ }
+}
+$('rhTarget').addEventListener('input',()=>{armRobinhoodTargetFromInput();render()});
+$('rhTarget').addEventListener('change',()=>{
+ const v=N($('rhTarget').value);
+ if(v!=null&&v>1000){S.targetOverride=v;S.overrideTicker=slotKey();localStorage.setItem('v9Target',JSON.stringify({v,slot:S.overrideTicker}))}
+ else{S.targetOverride=null;S.overrideTicker=null;localStorage.removeItem('v9Target')}
+ S.rhContractConfirmed=false;$('rhContractConfirm').checked=false;resetExecutionLock();
+ S.pHist=[];S.candidate=null;render();
+});
+$('clearTarget').onclick=()=>{$('rhTarget').value='';S.targetOverride=null;S.overrideTicker=null;S.lastFlightTs=0;S.lastFlightState=null;S.lastFlightSlot=null;localStorage.removeItem('v9Target');S.rhContractConfirmed=false;$('rhContractConfirm').checked=false;resetExecutionLock();S.pHist=[];S.candidate=null;render()};
+$('refresh').onclick=()=>{setDiag('diagWorker','RECONNECTING…','warn');setDiag('diagMarket','RECONNECTING…','warn');setDiag('diagSpot','RECONNECTING…','warn');fetchPoly();pollRestSpots();connectCoinbase();connectKraken()};
+$('exportCsv').onclick=()=>{
+ const cols=['ts','ticker','left','target','targetSource','proxy','adjustedProxy','p','raw','marketP','yesAsk','noAsk','upEdge','downEdge','quality','requiredEdge','signal','volRegime','dispersion','settlementPhase','probCap','trendPersistence','meanReversion','driftImpact','sigmaBlend','resiliencePenalty','zDistance','basisEstimate','basisWeight','rhP','rhBrti','outcome'];
+ const esc=v=>`"${String(v??'').replaceAll('"','""')}"`;const csv=[cols.join(','),...S.logs.map(r=>cols.map(c=>esc(r[c])).join(','))].join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='btc15m-v11.5-calibration.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+$('clearLogs').onclick=()=>{if(confirm('Clear all local calibration and auto-log snapshots?')){S.logs=[];S.rhSnaps=[];S.autoSnaps=[];S.checkpointSeen={};localStorage.removeItem('v9ShadowLogs');localStorage.removeItem('v96RhSnaps');localStorage.removeItem('v105AutoSnaps');updateLogStats();render()}};
+$('quantDetails').onclick=()=>{const x=$('quantAdvanced');const show=x.style.display==='none';x.style.display=show?'block':'none';$('quantDetails').textContent=show?'Hide diagnostics and export logs':'Show diagnostics and export logs';};
+$('quantApply').onclick=()=>{const t=N($('quantTarget').value),a=N($('quantAsk').value),v=$('quantVerify').checked;
+ if(t==null||t<1000||!v){$('quantQuote').textContent='Enter a valid target and verify the exact Robinhood expiry.';return;}
+ $('rhTarget').value=String(t);$('rhTarget').dispatchEvent(new Event('input',{bubbles:true}));
+ $('rhContractConfirm').checked=true;$('rhContractConfirm').dispatchEvent(new Event('change',{bubbles:true}));
+ if(a!=null&&a>0&&a<100){$('rhExecPrice').value=String(a);$('captureRh').click();}
+ else{$('clearRh').click();$('rhTarget').value=String(t);$('rhTarget').dispatchEvent(new Event('input',{bubbles:true}));$('rhContractConfirm').checked=true;$('rhContractConfirm').dispatchEvent(new Event('change',{bubbles:true}));}
+ safeRender();};
+$('toggleAdvanced').addEventListener('click',()=>{
+ const w=$('appWrap');w.classList.toggle('simple');
+ $('toggleAdvanced').textContent=w.classList.contains('simple')?'Show advanced diagnostics':'Hide advanced diagnostics';
+});
+
+safeRender();updateLogStats();
+try{connectCoinbase()}catch(e){$('cstat').textContent='Coinbase startup fallback'}
+try{connectKraken()}catch(e){$('rstat').textContent='Kraken startup fallback'}
+fetchKalshi();fetchPoly();pollRestSpots();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){pollRestSpots();if(S.relayDiag.upstream==='DepthFeed')backfillSettlementSeconds(true)}});
+setInterval(()=>{if(left()!=null&&left()<=65&&S.relayDiag.upstream==='DepthFeed')backfillSettlementSeconds(false)},2000);
+setInterval(safeRender,250);
+function marketPollLoop(){fetchKalshi().finally(()=>setTimeout(marketPollLoop,Math.max(30000,kalshiCooldown()+1000)))}
+// Kalshi discovery disabled in model-first mode.
+// Kalshi order-book polling disabled.
+setInterval(fetchPoly,5000);
+setInterval(pollRestSpots,3000);
+// Upstream settlement polling disabled to avoid rate limits.
+})();
+</script>
+</body>
+</html>
